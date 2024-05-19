@@ -208,7 +208,6 @@ public class GameControl : MonoBehaviour
         }
         if(StepCount <= 0 && OccupyAmount<=0 && DiceRolling==3 && StealingAndDonating<=0)
         {
-            leaderboard.ColorUpdate();
             remainingStepCounter.text = "0";
             if (CurrentTurn>0)
             {
@@ -259,6 +258,7 @@ public class GameControl : MonoBehaviour
                 DiceRolling = 3;
             }*/
             DiceRolling = 0;
+            leaderboard.ColorUpdate();
             return;
         }
 
@@ -272,6 +272,7 @@ public class GameControl : MonoBehaviour
     public int GetWinner()
     {
         int[] playerPoints=new int[4];
+        bool draw = false;
         for(int i=0;i<board.Length; i++)
         {
             if (board[i].occupiedBy==0)
@@ -289,14 +290,19 @@ public class GameControl : MonoBehaviour
             playerPoints[i] += playerDebts[i];
         }
         int maxIndex = 0;
-        for(int i=0;i<playerPoints.Length;i++)
+        for(int i=1;i<playerPoints.Length;i++)
         {
-            if (playerPoints[i] >= playerPoints[maxIndex])
+            if (playerPoints[i] > playerPoints[maxIndex])
             {
                 maxIndex = i;
+                draw = false;
+            }
+            else if(playerPoints[i] == playerPoints[maxIndex])
+            {
+                draw = true;
             }
         }
-        return maxIndex;
+        return draw ? -1 : maxIndex;
     }
 
     public void MovePlayer(int pos)
@@ -491,6 +497,7 @@ public class GameControl : MonoBehaviour
             playerDebts[playerNo] -= 2;
         }
         StealingAndDonating = 0;
+        leaderboard.ColorUpdate();
     }
 
     public bool CanBeOccupiedByPowerUp(int index)
