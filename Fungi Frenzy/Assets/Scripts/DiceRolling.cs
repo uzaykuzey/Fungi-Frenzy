@@ -84,7 +84,7 @@ public class DiceRolling : MonoBehaviour
 
     private void OnMouseDown()
     {
-        if(gameControl.DiceRolling!=0 || gameControl.GameOver)
+        if(gameControl.DiceRolling!=0 || gameControl.GameOver || gameControl.LeaderboardActive)
         {
             return;
         }

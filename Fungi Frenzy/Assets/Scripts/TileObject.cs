@@ -79,7 +79,7 @@ public class TileObject : MonoBehaviour
 
     private void OnMouseDown()
     {
-        if(gameControl.GameOver || gameControl.DiceRolling<=2)
+        if(gameControl.GameOver || gameControl.DiceRolling<=2 || gameControl.LeaderboardActive)
         {
             return;
         }

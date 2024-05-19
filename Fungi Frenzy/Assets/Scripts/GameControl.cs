@@ -16,6 +16,7 @@ public class GameControl : MonoBehaviour
     public int DiceRolling { get; set; } //0: dice can be thrown, 1: dice has been thrown, 2: the value first read, 3: wait for the turn to end
     public int StealingAndDonating { get; private set; }
     public int StepCount { get; private set; }
+    public bool LeaderboardActive { get; set; }
 
     [SerializeField] private int SideLength;
     [SerializeField] private bool[] deadPlayerList;
@@ -28,6 +29,7 @@ public class GameControl : MonoBehaviour
     [SerializeField] private SpriteRenderer crown;
     [SerializeField] private SpriteRenderer crownJewels;
     [SerializeField] private Sprite[] sprites;
+    [SerializeField] private Leaderboard leaderboard;
 
     private TileObject[] board;
     private Player[] players;
@@ -206,6 +208,7 @@ public class GameControl : MonoBehaviour
         }
         if(StepCount <= 0 && OccupyAmount<=0 && DiceRolling==3 && StealingAndDonating<=0)
         {
+            leaderboard.ColorUpdate();
             remainingStepCounter.text = "0";
             if (CurrentTurn>0)
             {
@@ -335,6 +338,7 @@ public class GameControl : MonoBehaviour
         board[pos].occupiedBy=CurrentTurn%4+1;
         Fill(pos);
         MarkMoveables();
+        leaderboard.ColorUpdate();
     }
 
     public void OccupyLand(int pos)
@@ -343,6 +347,7 @@ public class GameControl : MonoBehaviour
         OccupyAmount--;
         Fill(pos);
         MarkMoveables();
+        leaderboard.ColorUpdate();
     }
 
     void FillSingle(int position)
@@ -521,6 +526,27 @@ public class GameControl : MonoBehaviour
     public bool IsDead(int playerNo)
     {
         return deadPlayerList[playerNo % 4];
+    }
+
+    //2D array, first chooses the player, then index 0 is the occupied tile count and index 1 is debt count multiplied by -1.
+    public int[][] ScoreCount()
+    {
+        int[][] scores = new int[4][];
+        for(int i=0;i< scores.Length;i++)
+        {
+            scores[i] = new int[2];
+            scores[i][1] = -playerDebts[i];
+            scores[i][0] = 0;
+        }
+        foreach(TileObject tile in board)
+        {
+            if(tile.occupiedBy==0)
+            {
+                continue;
+            }
+            scores[tile.occupiedBy - 1][0]++;
+        }
+        return scores;
     }
 
     public List<TileObject> AdjacentTiles(int tileIndex)
