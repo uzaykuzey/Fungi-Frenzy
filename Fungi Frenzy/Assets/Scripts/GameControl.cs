@@ -198,6 +198,7 @@ public class GameControl : MonoBehaviour
             remainingStepCounter.text = value + (debt > 0 ? "+" + debt: (debt == 0 ? "": debt+""));
             playerDebts[CurrentTurn % 4] = 0;
         }
+        leaderboard.ColorUpdate();
     }
 
     void Update()
