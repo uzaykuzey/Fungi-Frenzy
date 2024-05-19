@@ -199,6 +199,10 @@ public class GameControl : MonoBehaviour
             playerDebts[CurrentTurn % 4] = 0;
         }
         leaderboard.ColorUpdate();
+        if(LeaderboardActive)
+        {
+            leaderboard.UpdateScores();
+        }
     }
 
     void Update()

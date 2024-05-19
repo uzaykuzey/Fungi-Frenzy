@@ -48,7 +48,7 @@ public class DiceRolling : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if(gameControl.DiceRolling==1 && Time.time - lastFromRoll > 6)
+        if(gameControl.DiceRolling==1 && Time.time - lastFromRoll > 8)
         {
             lastFromRoll = Time.time;
             if (Mathf.Abs(dice1.transform.position.z + 0.6785231f) > 0.0001)
@@ -84,7 +84,7 @@ public class DiceRolling : MonoBehaviour
 
     private void OnMouseDown()
     {
-        if(gameControl.DiceRolling!=0 || gameControl.GameOver || gameControl.LeaderboardActive)
+        if(gameControl.DiceRolling!=0 || gameControl.GameOver)
         {
             return;
         }

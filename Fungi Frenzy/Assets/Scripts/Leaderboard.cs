@@ -57,6 +57,16 @@ public class Leaderboard : MonoBehaviour
         return new Color(v.x, v.y, v.z, 1);
     }
 
+    public void UpdateScores()
+    {
+        int[][] scores = gameControl.ScoreCount();
+        for (int i = 0; i < canvases.Length; i++)
+        {
+            CanvasRenderer c = canvases[i];
+            c.GetComponent<Text>().text = "Occupied: " + scores[i][0] + ", Debt: " + scores[i][1];
+        }
+    }
+
     private void OnMouseDown()
     {
         clicked = !clicked;
