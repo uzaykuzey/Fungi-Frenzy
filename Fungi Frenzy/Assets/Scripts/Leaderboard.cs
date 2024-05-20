@@ -72,13 +72,22 @@ public class Leaderboard : MonoBehaviour
         clicked = !clicked;
         gameControl.LeaderboardActive = clicked;
         Color color = new(1, 1, 1, (clicked ? 1 : 0));
-        foreach (SpriteRenderer s in sprites) 
+        for(int i= 0; i < sprites.Length; i++) 
         {
+            if(i!=0 && gameControl.IsDead(i-1))
+            {
+                continue;
+            }
+            SpriteRenderer s = sprites[i];
             s.enabled = clicked;
         }
         int[][] scores = gameControl.ScoreCount();
         for(int i= 0;i<canvases.Length;i++)
         {
+            if (gameControl.IsDead(i))
+            {
+                continue;
+            }
             CanvasRenderer c = canvases[i];
             c.SetColor(color);
             c.GetComponent<Text>().text="Occupied: " + scores[i][0] + ", Debt: " + scores[i][1];
