@@ -340,7 +340,7 @@ public class GameControl : MonoBehaviour
 
     public void MovePlayer(int pos)
     {
-        if (board[pos].occupiedBy!=CurrentTurn%4+1 && board[pos].occupiedBy!=0 && !deadPlayerList[board[pos].occupiedBy-1] && SuperPowered==0)
+        if (board[pos].occupiedBy!=CurrentTurn%4+1 && board[pos].occupiedBy!=0 && !deadPlayerList[board[pos].occupiedBy-1] && SuperPowered!=1)
         {
             StepCount--;
         }
@@ -374,22 +374,16 @@ public class GameControl : MonoBehaviour
             StepCount += 3 + StealingAndDonating;
             eatenPowerUps++;
         }
-        else if (board[pos].powerUp==5)
+        else if (board[pos].powerUp==5&& !leaderboard.CurrentLeading.Contains(CurrentTurn % 4))
         {
-            if(!leaderboard.CurrentLeading.Contains(CurrentTurn % 4))
-            {
-                SuperPowered = 1;
-            }
+            SuperPowered = 1;
             board[pos].powerUp = 0;
             StepCount ++;
             eatenPowerUps++;
         }
-        else if (board[pos].powerUp==6)
+        else if (board[pos].powerUp==6&& !leaderboard.CurrentLeading.Contains(CurrentTurn % 4))
         {
-            if (!leaderboard.CurrentLeading.Contains(CurrentTurn % 4))
-            {
-                SuperPowered = 2;
-            }
+            SuperPowered = 2;    
             board[pos].powerUp = 0;
             StepCount ++;
             eatenPowerUps++;
