@@ -20,8 +20,7 @@ public class Leaderboard : MonoBehaviour
         }
         for (int i= 0;i<canvases.Length;i++)
         {
-            CanvasRenderer c = canvases[i];
-            c.SetColor(color);
+            canvases[i].SetColor(color);
         }
     }
 
@@ -29,9 +28,8 @@ public class Leaderboard : MonoBehaviour
     {
         int[][] scores = gameControl.ScoreCount();
         int most = 0;
-        List<int> winners=new();
-        winners.Add(0);
-        for(int i=1;i<scores.Length;i++)
+        List<int> winners = new(){0};
+        for (int i=1;i<scores.Length;i++)
         {
             if (scores[i][0]-scores[i][1] > scores[most][0] - scores[most][1])
             {
@@ -62,8 +60,7 @@ public class Leaderboard : MonoBehaviour
         int[][] scores = gameControl.ScoreCount();
         for (int i = 0; i < canvases.Length; i++)
         {
-            CanvasRenderer c = canvases[i];
-            c.GetComponent<Text>().text = "Occupied: " + scores[i][0] + ", Debt: " + scores[i][1];
+            canvases[i].GetComponent<Text>().text = "Occupied: " + scores[i][0] + ", Debt: " + scores[i][1];
         }
     }
 
@@ -78,8 +75,7 @@ public class Leaderboard : MonoBehaviour
             {
                 continue;
             }
-            SpriteRenderer s = sprites[i];
-            s.enabled = clicked;
+            sprites[i].enabled = clicked;
         }
         int[][] scores = gameControl.ScoreCount();
         for(int i= 0;i<canvases.Length;i++)
