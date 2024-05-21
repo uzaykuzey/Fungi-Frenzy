@@ -9,7 +9,7 @@ public class TileObject : MonoBehaviour
     public int powerUp; //0: no powerup, 1: food, 2: tile getter, 3: step donater, 4: step stealer
     [SerializeField] private SpriteRenderer food;
     public static readonly Color[] PlayerColors = new Color[] {Color.white, new Color(0.7133158f, 0.211819f, 0.990566f, 1), Color.red, Color.yellow, Color.cyan};
-    public static readonly Color[] PowerUpColors = new Color[] { new Color(0,0,0,0), new Color(0.6226415f, 0.2161726f, 0.01566389f, 1), new Color(0.3f, 0.3f, 1, 1), Color.green, new Color(1, 0.5817609f, 0.9577771f, 1) };
+    public static readonly Color[] PowerUpColors = new Color[] { new Color(0,0,0,0), new Color(0.6226415f, 0.2161726f, 0.01566389f, 1), new Color(0.3f, 0.3f, 1, 1), Color.green, new Color(1, 0.5817609f, 0.9577771f, 1) , Color.white, Color.black};
     public bool moveable;
     public int boardPosition;
     public int signal;
@@ -17,18 +17,53 @@ public class TileObject : MonoBehaviour
     public int signalEffecting;
     public bool previouslySignaled;
     [SerializeField] private GameControl gameControl;
+    private float hue;
+    private float alpha;
+    private float change;
+    private SpriteRenderer tileRenderer;
+
     // Start is called before the first frame update
     void Start()
     {
+        change = 0.3f;
         signalEffecting = 0;
+        alpha = 0.8f;
         previouslySignaled = false;
         signal = 0;
+        hue = 0;
+        tileRenderer=GetComponent<SpriteRenderer>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        if(signal!=0 && Time.time-signalTime>0.05)
+        if (boardPosition == 0)
+        {
+            hue += Time.deltaTime * 0.1f;
+            if (hue > 1f)
+            {
+                hue -= 1f;
+            }
+            PowerUpColors[5] = Color.HSVToRGB(hue, 1f, 1f);
+
+            alpha += Time.deltaTime * change;
+            if(alpha>1)
+            {
+                change = -0.3f;
+            }
+            else if(alpha<0.5f)
+            {
+                change = 0.3f;
+            }
+            PowerUpColors[6] = new Color(0,0,0,alpha);
+            if(gameControl.SuperPowered==2)
+            {
+                Color c = PlayerColors[gameControl.CurrentTurn % 4 + 1];
+                PlayerColors[gameControl.CurrentTurn % 4 + 1] = new Color(c.r,c.g,c.b,alpha);
+            }
+        }
+
+        if (signal!=0 && Time.time-signalTime>0.05)
         {
             List<TileObject> adjacents = gameControl.AdjacentTiles(boardPosition);
             foreach(TileObject tile in adjacents)
@@ -69,11 +104,15 @@ public class TileObject : MonoBehaviour
         }
         else if (occupiedBy!=0&&gameControl.IsDead(occupiedBy-1))
         {
-            this.GetComponent<SpriteRenderer>().color = Color.gray;
+            tileRenderer.color = Color.gray;
+        }
+        else if(gameControl.SuperPowered==1 && occupiedBy - 1==gameControl.CurrentTurn%4)
+        {
+            tileRenderer.color = PowerUpColors[5];
         }
         else
         {
-            this.GetComponent<SpriteRenderer>().color = PlayerColors[occupiedBy];
+            tileRenderer.color = PlayerColors[occupiedBy];
         }
     }
 

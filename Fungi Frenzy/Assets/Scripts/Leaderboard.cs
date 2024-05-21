@@ -9,6 +9,7 @@ public class Leaderboard : MonoBehaviour
     [SerializeField] CanvasRenderer[] canvases;
     [SerializeField] GameControl gameControl;
     bool clicked;
+    public List<int> CurrentLeading;
     // Start is called before the first frame update
     void Start()
     {
@@ -41,6 +42,7 @@ public class Leaderboard : MonoBehaviour
                 winners.Add(i);
             }
         }
+        CurrentLeading = winners;
         GetComponent<SpriteRenderer>().color = winners.Count==1 ? TileObject.PlayerColors[most + 1] : winners.Count==4 ? TileObject.PlayerColors[0] :Average(winners); 
     }
 

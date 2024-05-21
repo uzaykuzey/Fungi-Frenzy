@@ -17,6 +17,7 @@ public class GameControl : MonoBehaviour
     public int StealingAndDonating { get; private set; }
     public int StepCount { get; private set; }
     public bool LeaderboardActive { get; set; }
+    public int SuperPowered { get; private set; }
 
     [SerializeField] private int SideLength;
     [SerializeField] private bool[] deadPlayerList;
@@ -67,6 +68,7 @@ public class GameControl : MonoBehaviour
         winnerDisplay.enabled = false;
         crown.enabled = false;
         crownJewels.enabled = false;
+        SuperPowered = 0;
         CreateBoard(cubeSize);
     }
 
@@ -141,15 +143,30 @@ public class GameControl : MonoBehaviour
         return new Vector2(index%SideLength, index/SideLength);
     }
 
+    private bool SupersCanSpawn()
+    {
+        if(biggestTurnCounter<2 || leaderboard.CurrentLeading.Contains(CurrentTurn%4))
+        {
+            return false;
+        }
+        for(int i=0;i<board.Length;i++) 
+        {
+            if (board[i].powerUp==5 || board[i].powerUp==6)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
     void ReplenishPowerUps()
     {
         int chanceFactor = board.Length;
-        int probabilityStealing = (int) (30 / (1 + Mathf.Exp(-biggestTurnCounter)) - 15);
+        int probabilitySuper = SupersCanSpawn() ? (int)(4.4 / (1 + Mathf.Exp(-biggestTurnCounter * 0.7054651f)) - 2.2): 0;
+        int probabilityStealing = (int) (30 / (1 + Mathf.Exp(-biggestTurnCounter)) - 15) + probabilitySuper;
         int probabilityDonating = (int) (12 / (1 + Mathf.Exp(-biggestTurnCounter)) - 6) + probabilityStealing;
         int probabilityClaiming = (int) (60 / (1 + Mathf.Exp(-biggestTurnCounter)) - 30) + probabilityDonating;
-        //print("Food: " + (100-probabilityClaiming-probabilityDonating-probabilityStealing) + " Claiming: " + (probabilityClaiming-probabilityDonating) + " Stealing: " + probabilityStealing + " Donating: " + (probabilityDonating-probabilityStealing));
         int counter = toFill;
-        
         while (counter > 0 && chanceFactor>=0)
         {
             chanceFactor--;
@@ -157,7 +174,15 @@ public class GameControl : MonoBehaviour
             if (board[i].occupiedBy == 0 && board[i].powerUp == 0)
             {
                 int rand=UnityEngine.Random.Range(1, 101);
-                if (rand <= probabilityStealing)
+                if(rand<=probabilitySuper)
+                {
+                    board[i].powerUp = UnityEngine.Random.Range(0, 2)==0 ? 5: 6;
+                    probabilityStealing -= probabilitySuper;
+                    probabilityDonating -= probabilitySuper;
+                    probabilityClaiming -= probabilitySuper;
+                    probabilitySuper = 0;
+                }
+                else if (rand <= probabilityStealing)
                 {
                     board[i].powerUp = 4;
                 }
@@ -213,11 +238,14 @@ public class GameControl : MonoBehaviour
         }
         if(StepCount <= 0 && OccupyAmount<=0 && DiceRolling==3 && StealingAndDonating<=0)
         {
+            SuperPowered = 0;
             remainingStepCounter.text = "0";
             if (CurrentTurn>0)
             {
                 playerDebts[CurrentTurn % 4] += StepCount;
             }
+            Color c = TileObject.PlayerColors[CurrentTurn % 4 + 1];
+            TileObject.PlayerColors[CurrentTurn % 4 + 1] = new Color(c.r, c.g, c.b, 1);
             CurrentTurn++;
             if (CurrentTurn % 4 == 0)
             {
@@ -312,7 +340,7 @@ public class GameControl : MonoBehaviour
 
     public void MovePlayer(int pos)
     {
-        if (board[pos].occupiedBy!=CurrentTurn%4+1 && board[pos].occupiedBy!=0 && !deadPlayerList[board[pos].occupiedBy-1])
+        if (board[pos].occupiedBy!=CurrentTurn%4+1 && board[pos].occupiedBy!=0 && !deadPlayerList[board[pos].occupiedBy-1] && SuperPowered==0)
         {
             StepCount--;
         }
@@ -344,6 +372,26 @@ public class GameControl : MonoBehaviour
             StealingAndDonating = -1;
             board[pos].powerUp = 0;
             StepCount += 3 + StealingAndDonating;
+            eatenPowerUps++;
+        }
+        else if (board[pos].powerUp==5)
+        {
+            if(!leaderboard.CurrentLeading.Contains(CurrentTurn % 4))
+            {
+                SuperPowered = 1;
+            }
+            board[pos].powerUp = 0;
+            StepCount ++;
+            eatenPowerUps++;
+        }
+        else if (board[pos].powerUp==6)
+        {
+            if (!leaderboard.CurrentLeading.Contains(CurrentTurn % 4))
+            {
+                SuperPowered = 2;
+            }
+            board[pos].powerUp = 0;
+            StepCount ++;
             eatenPowerUps++;
         }
         board[pos].occupiedBy=CurrentTurn%4+1;
@@ -424,6 +472,17 @@ public class GameControl : MonoBehaviour
                 tile.moveable = true;
             }
         }
+        if(SuperPowered==2)
+        {
+            tileObjects = Diagonals(pos);
+            foreach (TileObject tile in tileObjects)
+            {
+                if (!tile.hasPlayerOn)
+                {
+                    tile.moveable = true;
+                }
+            }
+        }
     }
 
 
@@ -458,6 +517,14 @@ public class GameControl : MonoBehaviour
             foreach (TileObject tile in adjacent)
             {
                 stack.Push(tile.boardPosition);
+            }
+            if(SuperPowered==2)
+            {
+                adjacent = Diagonals(index);
+                foreach (TileObject tile in adjacent)
+                {
+                    stack.Push(tile.boardPosition);
+                }
             }
         }
     }
@@ -519,6 +586,17 @@ public class GameControl : MonoBehaviour
                 return true;
             }
         }
+        if(SuperPowered==2)
+        {
+            adjacents = Diagonals(index);
+            for (int i = 0; i < adjacents.Count; i++)
+            {
+                if (adjacents[i].occupiedBy == CurrentTurn % 4 + 1)
+                {
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
@@ -559,6 +637,29 @@ public class GameControl : MonoBehaviour
             scores[tile.occupiedBy - 1][0]++;
         }
         return scores;
+    }
+
+    public List<TileObject> Diagonals(int tileIndex)
+    {
+        List<TileObject> tiles = new();
+        Vector2 v = GetBoardCoordinate(tileIndex);
+        if (LegalPosition(v + new Vector2(1, 1)))
+        {
+            tiles.Add(board[GetBoardPosition(v + new Vector2(1, 1))]);
+        }
+        if (LegalPosition(v + new Vector2(1, -1)))
+        {
+            tiles.Add(board[GetBoardPosition(v + new Vector2(1, -1))]);
+        }
+        if (LegalPosition(v + new Vector2(-1, -1)))
+        {
+            tiles.Add(board[GetBoardPosition(v + new Vector2(-1, -1))]);
+        }
+        if (LegalPosition(v + new Vector2(-1, 1)))
+        {
+            tiles.Add(board[GetBoardPosition(v + new Vector2(-1, 1))]);
+        }
+        return tiles;
     }
 
     public List<TileObject> AdjacentTiles(int tileIndex)
