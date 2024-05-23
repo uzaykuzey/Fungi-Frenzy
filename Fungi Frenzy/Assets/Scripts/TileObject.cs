@@ -17,17 +17,23 @@ public class TileObject : MonoBehaviour
     public int signalEffecting;
     public bool previouslySignaled;
     [SerializeField] private GameControl gameControl;
-    private float hue;
-    private float alpha;
-    private float change;
+    private static float hue;
+    private static float alphaPo;
+    public static float AlphaPl { set; get; }
+    private static float changePo;
+    private static float changePl;
     private SpriteRenderer tileRenderer;
+    private static Color diagonalPowerColor;
+    private static float lastTimeFromSuperPowered;
 
     // Start is called before the first frame update
     void Start()
     {
-        change = 0.3f;
+        changePo = 0.3f;
+        changePl = 0.1f;
+        AlphaPl = 1;
         signalEffecting = 0;
-        alpha = 0.8f;
+        alphaPo = 0.8f;
         previouslySignaled = false;
         signal = 0;
         hue = 0;
@@ -37,7 +43,7 @@ public class TileObject : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (boardPosition == 0)
+        if (boardPosition == 1)
         {
             hue += Time.deltaTime * 0.1f;
             if (hue > 1f)
@@ -46,21 +52,43 @@ public class TileObject : MonoBehaviour
             }
             PowerUpColors[5] = Color.HSVToRGB(hue, 1f, 1f);
 
-            alpha += Time.deltaTime * change;
-            if(alpha>1)
+            alphaPo += Time.deltaTime * changePo;
+            AlphaPl += Time.deltaTime * changePl;
+            if(alphaPo>1)
             {
-                change = -0.3f;
+                changePo = -0.5f;
             }
-            else if(alpha<0.5f)
+            else if(alphaPo<0)
             {
-                change = 0.3f;
+                changePo = 0.5f;
             }
-            PowerUpColors[6] = new Color(0,0,0,alpha);
+
+            if(AlphaPl>1)
+            {
+                changePl = -0.2f;
+            }
+            else if(AlphaPl<0)
+            {
+                changePl = 0.2f;
+            }
+
+
+            float a = Mathf.Sin(alphaPo * Mathf.PI);
+            PowerUpColors[6] = new Color(0,0,0,a*a);
             if(gameControl.SuperPowered==2)
             {
                 Color c = PlayerColors[gameControl.CurrentTurn % 4 + 1];
-                PlayerColors[gameControl.CurrentTurn % 4 + 1] = new Color(c.r,c.g,c.b,alpha);
+                a = Mathf.Sin(AlphaPl * Mathf.PI);
+                diagonalPowerColor = new Color(c.r,c.g,c.b,a*a);
             }
+        }
+
+        if(hasPlayerOn && gameControl.CurrentTurn%4+1==occupiedBy && gameControl.SuperPowered == 1 && Time.time - lastTimeFromSuperPowered > 4)
+        {
+            lastTimeFromSuperPowered = Time.time;
+            signalEffecting = gameControl.CurrentTurn % 4 + 1;
+            signal = 2;
+            gameControl.ClearSignals();
         }
 
         if (signal!=0 && Time.time-signalTime>0.05)
@@ -100,15 +128,15 @@ public class TileObject : MonoBehaviour
 
         if(signal!=0 && signalEffecting==occupiedBy)
         {
-            GetComponent<SpriteRenderer>().color = signal == 1 ? PowerUpColors[3] : PowerUpColors[4];
+            GetComponent<SpriteRenderer>().color = signal == 1 ? PowerUpColors[3] : signal==-1 ? PowerUpColors[4]: PowerUpColors[5];
         }
         else if (occupiedBy!=0&&gameControl.IsDead(occupiedBy-1))
         {
             tileRenderer.color = Color.gray;
         }
-        else if(gameControl.SuperPowered==1 && occupiedBy - 1==gameControl.CurrentTurn%4)
+        else if(gameControl.SuperPowered==2 && occupiedBy -1==gameControl.CurrentTurn%4)
         {
-            tileRenderer.color = PowerUpColors[5];
+            tileRenderer.color = diagonalPowerColor;
         }
         else
         {

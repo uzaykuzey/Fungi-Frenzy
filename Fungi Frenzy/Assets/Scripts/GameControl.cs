@@ -171,7 +171,7 @@ public class GameControl : MonoBehaviour
         {
             chanceFactor--;
             int i = UnityEngine.Random.Range(0, SideLength*SideLength);
-            if (board[i].occupiedBy == 0 && board[i].powerUp == 0)
+            if (board[i].occupiedBy == 0)
             {
                 int rand=UnityEngine.Random.Range(1, 101);
                 if(rand<=probabilitySuper)
@@ -180,7 +180,12 @@ public class GameControl : MonoBehaviour
                     probabilityStealing -= probabilitySuper;
                     probabilityDonating -= probabilitySuper;
                     probabilityClaiming -= probabilitySuper;
-                    probabilitySuper = 0;
+                    probabilitySuper = 0; 
+                    continue;
+                }
+                else if (board[i].powerUp != 0)
+                {
+                    continue;
                 }
                 else if (rand <= probabilityStealing)
                 {
@@ -385,8 +390,9 @@ public class GameControl : MonoBehaviour
         {
             SuperPowered = 2;    
             board[pos].powerUp = 0;
-            StepCount ++;
+            StepCount += 4;
             eatenPowerUps++;
+            TileObject.AlphaPl = 0.5f;
         }
         board[pos].occupiedBy=CurrentTurn%4+1;
         Fill(pos);
@@ -548,12 +554,17 @@ public class GameControl : MonoBehaviour
         }
     }
 
-    public void DonateAndSteal(int playerNo)
+    public void ClearSignals()
     {
-        for(int i=0;i<board.Length;i++)
+        for (int i = 0; i < board.Length; i++)
         {
             board[i].previouslySignaled = false;
         }
+    }
+
+    public void DonateAndSteal(int playerNo)
+    {
+        ClearSignals();
         if(StealingAndDonating>0)
         {
             playerDebts[playerNo] += 4;

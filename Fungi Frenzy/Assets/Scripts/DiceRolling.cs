@@ -79,7 +79,7 @@ public class DiceRolling : MonoBehaviour
             dice1Renderer.enabled = false;
             dice2Renderer.enabled=false;
         }
-        rollButton.color= shifted? Color.white:TileObject.PlayerColors[gameControl.CurrentTurn % 4 + 1];
+        rollButton.color= shifted? Color.white : TileObject.PlayerColors[gameControl.CurrentTurn % 4 + 1];
     }
 
     private void OnMouseDown()
