@@ -1,11 +1,6 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.UIElements;
 
 public class GameControl : MonoBehaviour
 {
@@ -87,7 +82,6 @@ public class GameControl : MonoBehaviour
             board[i].occupiedBy=0;
             board[i].hasPlayerOn = false;
             board[i].powerUp = 0;
-            board[i].moveable = false;
             board[i].boardPosition = i;
             if(i/SideLength < playerTerritories && i%SideLength < playerTerritories)
             {
@@ -162,26 +156,26 @@ public class GameControl : MonoBehaviour
     void ReplenishPowerUps()
     {
         int chanceFactor = board.Length;
+        float sigmoidReciprocal = 1 + Mathf.Exp(-biggestTurnCounter);
         int probabilitySuper = SupersCanSpawn() ? (int)(4.4 / (1 + Mathf.Exp(-biggestTurnCounter * 0.7054651f)) - 2.2): 0;
-        int probabilityStealing = (int) (30 / (1 + Mathf.Exp(-biggestTurnCounter)) - 15) + probabilitySuper;
-        int probabilityDonating = (int) (12 / (1 + Mathf.Exp(-biggestTurnCounter)) - 6) + probabilityStealing;
-        int probabilityClaiming = (int) (60 / (1 + Mathf.Exp(-biggestTurnCounter)) - 30) + probabilityDonating;
+        int probabilityStealing = (int) (30 / sigmoidReciprocal - 15) + probabilitySuper;
+        int probabilityDonating = (int) (12 / sigmoidReciprocal - 6) + probabilityStealing;
+        int probabilityClaiming = (int) (60 / sigmoidReciprocal - 30) + probabilityDonating;
         int counter = toFill;
         while (counter > 0 && chanceFactor>=0)
         {
             chanceFactor--;
-            int i = UnityEngine.Random.Range(0, SideLength*SideLength);
+            int i = Random.Range(0, board.Length);
             if (board[i].occupiedBy == 0)
             {
-                int rand=UnityEngine.Random.Range(1, 101);
+                int rand=Random.Range(1, 101);
                 if(rand<=probabilitySuper)
                 {
-                    board[i].powerUp = UnityEngine.Random.Range(0, 2)==0 ? 5: 6;
+                    board[i].powerUp = Random.Range(0, 2)==0 ? 5: 6;
                     probabilityStealing -= probabilitySuper;
                     probabilityDonating -= probabilitySuper;
                     probabilityClaiming -= probabilitySuper;
                     probabilitySuper = 0; 
-                    continue;
                 }
                 else if (board[i].powerUp != 0)
                 {
@@ -249,8 +243,6 @@ public class GameControl : MonoBehaviour
             {
                 playerDebts[CurrentTurn % 4] += StepCount;
             }
-            Color c = TileObject.PlayerColors[CurrentTurn % 4 + 1];
-            TileObject.PlayerColors[CurrentTurn % 4 + 1] = new Color(c.r, c.g, c.b, 1);
             CurrentTurn++;
             if (CurrentTurn % 4 == 0)
             {
@@ -283,7 +275,6 @@ public class GameControl : MonoBehaviour
                 return;
             }
             ReplenishPowerUps();
-            MarkMoveables();
             if(IsKilled())
             {
                 return;
@@ -343,6 +334,48 @@ public class GameControl : MonoBehaviour
         return draw ? -1 : maxIndex;
     }
 
+    public bool CanMove(int position)
+    {
+        List<TileObject> tiles=AdjacentTiles(position);
+        if(SuperPowered==2)
+        {
+            tiles.AddRange(Diagonals(position));
+        }
+        foreach(TileObject tile in tiles)
+        {
+            if(tile.hasPlayerOn && tile.occupiedBy==CurrentTurn%4+1)
+            {
+                return true;
+            }
+        }
+        Stack<int> stack=new();
+        stack.Push(position);
+        bool[] visited=new bool[board.Length];
+        while(stack.Count>0)
+        {
+            int current=stack.Pop();
+            if (visited[current] || board[current].occupiedBy!=CurrentTurn%4+1)
+            {
+                continue;
+            }
+            if (board[current].hasPlayerOn)
+            {
+                return true;
+            }
+            visited[current]=true;
+            tiles = AdjacentTiles(current);
+            if (SuperPowered == 2)
+            {
+                tiles.AddRange(Diagonals(current));
+            }
+            foreach(TileObject tile in tiles)
+            {
+                stack.Push(tile.boardPosition);
+            }
+        }
+        return false;
+    }
+
     public void MovePlayer(int pos)
     {
         if (board[pos].occupiedBy!=CurrentTurn%4+1 && board[pos].occupiedBy!=0 && !deadPlayerList[board[pos].occupiedBy-1] && SuperPowered!=1)
@@ -353,50 +386,60 @@ public class GameControl : MonoBehaviour
         playerPositions[CurrentTurn % 4] = pos;
         board[pos].hasPlayerOn = true;
         StepCount--;
-        if (board[pos].powerUp==1)  
+        switch (board[pos].powerUp)
         {
-            StepCount += 3;
-            board[pos].powerUp = 0;
-            eatenPowerUps++;
-        }
-        else if (board[pos].powerUp==2)
-        {
-            OccupyAmount = 3;
-            board[pos].powerUp = 0;
-            eatenPowerUps++;
-        }
-        else if (board[pos].powerUp==3)
-        {
-            StealingAndDonating = 1;
-            board[pos].powerUp = 0;
-            StepCount += 3 + StealingAndDonating;
-            eatenPowerUps++;
-        }
-        else if (board[pos].powerUp==4)
-        {
-            StealingAndDonating = -1;
-            board[pos].powerUp = 0;
-            StepCount += 3 + StealingAndDonating;
-            eatenPowerUps++;
-        }
-        else if (board[pos].powerUp==5&& !leaderboard.CurrentLeading.Contains(CurrentTurn % 4))
-        {
-            SuperPowered = 1;
-            board[pos].powerUp = 0;
-            StepCount ++;
-            eatenPowerUps++;
-        }
-        else if (board[pos].powerUp==6&& !leaderboard.CurrentLeading.Contains(CurrentTurn % 4))
-        {
-            SuperPowered = 2;    
-            board[pos].powerUp = 0;
-            StepCount += 4;
-            eatenPowerUps++;
-            TileObject.AlphaPl = 0.5f;
+            case 1:
+                StepCount += 3;
+                board[pos].powerUp = 0;
+                eatenPowerUps++;
+                break;
+
+            case 2:
+                OccupyAmount = 3;
+                board[pos].powerUp = 0;
+                eatenPowerUps++;
+                break;
+
+            case 3:
+                StealingAndDonating = 1;
+                board[pos].powerUp = 0;
+                StepCount += 3 + StealingAndDonating;
+                eatenPowerUps++;
+                break;
+
+            case 4:
+                StealingAndDonating = -1;
+                board[pos].powerUp = 0;
+                StepCount += 3 + StealingAndDonating;
+                eatenPowerUps++;
+                break;
+
+            case 5:
+                if (!leaderboard.CurrentLeading.Contains(CurrentTurn % 4))
+                {
+                    SuperPowered = 1;
+                    board[pos].powerUp = 0;
+                    StepCount++;
+                    eatenPowerUps++;
+                }
+                break;
+
+            case 6:
+                if (!leaderboard.CurrentLeading.Contains(CurrentTurn % 4))
+                {
+                    SuperPowered = 2;
+                    board[pos].powerUp = 0;
+                    StepCount += 4;
+                    eatenPowerUps++;
+                    TileObject.AlphaPl = 0.5f;
+                }
+                break;
+
+            default:
+                break;
         }
         board[pos].occupiedBy=CurrentTurn%4+1;
         Fill(pos);
-        MarkMoveables();
         leaderboard.ColorUpdate();
     }
 
@@ -405,7 +448,6 @@ public class GameControl : MonoBehaviour
         board[pos].occupiedBy = CurrentTurn % 4 + 1;
         OccupyAmount--;
         Fill(pos);
-        MarkMoveables();
         leaderboard.ColorUpdate();
     }
 
@@ -453,80 +495,6 @@ public class GameControl : MonoBehaviour
             }
         }
         return true;
-    }
-
-    void MarkMoveables()
-    {
-        for(int i=0;i<board.Length;i++)
-        {
-            board[i].moveable = false;
-        }
-        int pos = playerPositions[CurrentTurn % 4];
-        board[pos].occupiedBy = CurrentTurn%4 + 1;
-        IterativeMarking(pos);
-        List<TileObject> tileObjects = AdjacentTiles(pos);
-        foreach(TileObject tile in tileObjects)
-        {
-            if(!tile.hasPlayerOn)
-            {
-                tile.moveable = true;
-            }
-        }
-        if(SuperPowered==2)
-        {
-            tileObjects = Diagonals(pos);
-            foreach (TileObject tile in tileObjects)
-            {
-                if (!tile.hasPlayerOn)
-                {
-                    tile.moveable = true;
-                }
-            }
-        }
-    }
-
-
-    void RecursiveMarking(int position)
-    {
-        int index= position;
-        if (board[index].moveable || board[index].occupiedBy-1!=CurrentTurn%4)
-        {
-            return;
-        }
-        board[index].moveable= true;
-        List<TileObject> adjacent = AdjacentTiles(index);
-        foreach(TileObject tile in adjacent)
-        {
-            RecursiveMarking(tile.boardPosition);
-        }
-    }
-
-    void IterativeMarking(int start)
-    {
-        Stack<int> stack=new();
-        stack.Push(start);
-        while (stack.Count > 0)
-        {
-            int index=stack.Pop();
-            if(board[index].moveable || board[index].occupiedBy - 1 != CurrentTurn % 4)
-            {
-                continue;
-            }
-            board[index].moveable = true;
-            List<TileObject> adjacent = AdjacentTiles(index);
-            foreach (TileObject tile in adjacent)
-            {
-                stack.Push(tile.boardPosition);
-            }
-            if(SuperPowered==2)
-            {
-                adjacent = Diagonals(index);
-                foreach (TileObject tile in adjacent)
-                {
-                    stack.Push(tile.boardPosition);
-                }
-            }
-        }
     }
 
     void Fill(int position)

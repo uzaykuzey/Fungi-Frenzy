@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -10,11 +9,11 @@ public class TileObject : MonoBehaviour
     [SerializeField] private SpriteRenderer food;
     public static readonly Color[] PlayerColors = new Color[] {Color.white, new Color(0.7133158f, 0.211819f, 0.990566f, 1), Color.red, Color.yellow, Color.cyan};
     public static readonly Color[] PowerUpColors = new Color[] { new Color(0,0,0,0), new Color(0.6226415f, 0.2161726f, 0.01566389f, 1), new Color(0.3f, 0.3f, 1, 1), Color.green, new Color(1, 0.5817609f, 0.9577771f, 1) , Color.white, Color.black};
-    public bool moveable;
     public int boardPosition;
     public int signal;
     public float signalTime;
     public int signalEffecting;
+    public float signalHue;
     public bool previouslySignaled;
     [SerializeField] private GameControl gameControl;
     private static float hue;
@@ -45,7 +44,7 @@ public class TileObject : MonoBehaviour
     {
         if (boardPosition == 1)
         {
-            hue += Time.deltaTime * 0.1f;
+            hue += Time.deltaTime * 0.2f;
             if (hue > 1f)
             {
                 hue -= 1f;
@@ -79,15 +78,16 @@ public class TileObject : MonoBehaviour
             {
                 Color c = PlayerColors[gameControl.CurrentTurn % 4 + 1];
                 a = Mathf.Sin(AlphaPl * Mathf.PI);
-                diagonalPowerColor = new Color(c.r,c.g,c.b,a*a);
+                diagonalPowerColor = new Color(c.r,c.g,c.b,a*a*0.66666667f + 0.3333333f);
             }
         }
 
-        if(hasPlayerOn && gameControl.CurrentTurn%4+1==occupiedBy && gameControl.SuperPowered == 1 && Time.time - lastTimeFromSuperPowered > 4)
+        if(hasPlayerOn && gameControl.CurrentTurn%4+1==occupiedBy && gameControl.SuperPowered == 1 && Time.time - lastTimeFromSuperPowered > 2.75f)
         {
             lastTimeFromSuperPowered = Time.time;
             signalEffecting = gameControl.CurrentTurn % 4 + 1;
             signal = 2;
+            Color.RGBToHSV(PlayerColors[gameControl.CurrentTurn%4+1], out signalHue, out _, out _);
             gameControl.ClearSignals();
         }
 
@@ -101,6 +101,11 @@ public class TileObject : MonoBehaviour
                     tile.signalEffecting = signalEffecting;
                     tile.signal = signal;
                     tile.signalTime = Time.time;
+                    tile.signalHue = signalHue + 0.1f;
+                    if(tile.signalHue>1)
+                    {
+                        tile.signalHue -= 1f;
+                    }
                 }
             }
             previouslySignaled = true;
@@ -128,7 +133,7 @@ public class TileObject : MonoBehaviour
 
         if(signal!=0 && signalEffecting==occupiedBy)
         {
-            GetComponent<SpriteRenderer>().color = signal == 1 ? PowerUpColors[3] : signal==-1 ? PowerUpColors[4]: PowerUpColors[5];
+            GetComponent<SpriteRenderer>().color = signal == 1 ? PowerUpColors[3] : signal==-1 ? PowerUpColors[4]: Color.HSVToRGB(signalHue,1,1);
         }
         else if (occupiedBy!=0&&gameControl.IsDead(occupiedBy-1))
         {
@@ -166,7 +171,7 @@ public class TileObject : MonoBehaviour
                 gameControl.OccupyLand(boardPosition);
             }
         }
-        else if(moveable && !hasPlayerOn && gameControl.StepCount > 0)
+        else if(gameControl.CanMove(boardPosition) && !hasPlayerOn && gameControl.StepCount > 0)
         {
             gameControl.MovePlayer(boardPosition);
         }
