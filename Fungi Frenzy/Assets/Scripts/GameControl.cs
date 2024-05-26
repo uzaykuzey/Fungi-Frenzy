@@ -34,10 +34,12 @@ public class GameControl : MonoBehaviour
     private int[] playerPositions;
     private int eatenPowerUps;
     private int toFill;
+    private bool alreadyBoosted;
 
 
     void Start()
     {
+        alreadyBoosted = false;
         StealingAndDonating = 0;
         DiceRolling = 3;
         GameOver = false;
@@ -153,11 +155,32 @@ public class GameControl : MonoBehaviour
         return true;
     }
 
+    private int SuperBoost()
+    {
+        if(biggestTurnCounter<5 || alreadyBoosted)
+        {
+            return 0;
+        }
+        int[][] scores = ScoreCount();
+        int biggest = scores[0][0] > scores[0][1] ? 0 : 1;
+        int secondBiggest = 1-biggest;
+        for(int i = 2; i < scores[0].Length;i++)
+        {
+            if (scores[0][i] > scores[0][biggest])
+            {
+                secondBiggest = biggest;
+                biggest = i;
+            }
+        }
+        int p = scores[0][biggest] - scores[0][secondBiggest];
+        return  p>= 50 ? 12: (p>=37 ? 7: 0);
+    }
+
     void ReplenishPowerUps()
     {
         int chanceFactor = board.Length;
         float sigmoidReciprocal = 1 + Mathf.Exp(-biggestTurnCounter);
-        int probabilitySuper = SupersCanSpawn() ? (int)(4.4 / (1 + Mathf.Exp(-biggestTurnCounter * 0.7054651f)) - 2.2): 0;
+        int probabilitySuper = SupersCanSpawn() ? ((int)(4.4 / (1 + Mathf.Exp(-biggestTurnCounter * 0.7054651f)) - 2.2) + SuperBoost()): 0;
         int probabilityStealing = (int) (30 / sigmoidReciprocal - 15) + probabilitySuper;
         int probabilityDonating = (int) (12 / sigmoidReciprocal - 6) + probabilityStealing;
         int probabilityClaiming = (int) (60 / sigmoidReciprocal - 30) + probabilityDonating;
@@ -172,6 +195,10 @@ public class GameControl : MonoBehaviour
                 if(rand<=probabilitySuper)
                 {
                     board[i].powerUp = Random.Range(0, 2)==0 ? 5: 6;
+                    if(probabilitySuper>4)
+                    {
+                        alreadyBoosted = true;
+                    }
                     probabilityStealing -= probabilitySuper;
                     probabilityDonating -= probabilitySuper;
                     probabilityClaiming -= probabilitySuper;

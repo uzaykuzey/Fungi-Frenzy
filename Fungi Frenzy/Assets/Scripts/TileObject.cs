@@ -78,7 +78,7 @@ public class TileObject : MonoBehaviour
             {
                 Color c = PlayerColors[gameControl.CurrentTurn % 4 + 1];
                 a = Mathf.Sin(AlphaPl * Mathf.PI);
-                diagonalPowerColor = new Color(c.r,c.g,c.b,a*a*0.66666667f + 0.3333333f);
+                diagonalPowerColor = new Color(c.r,c.g,c.b,a*a*0.66666667f + 0.33333333f);
             }
         }
 
@@ -96,7 +96,7 @@ public class TileObject : MonoBehaviour
             List<TileObject> adjacents = gameControl.AdjacentTiles(boardPosition);
             foreach(TileObject tile in adjacents)
             {
-                if(!tile.previouslySignaled)
+                if(!tile.previouslySignaled && (signal!=2 || tile.occupiedBy==signalEffecting))
                 {
                     tile.signalEffecting = signalEffecting;
                     tile.signal = signal;
