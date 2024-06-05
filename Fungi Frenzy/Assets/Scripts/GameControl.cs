@@ -14,7 +14,6 @@ public class GameControl : MonoBehaviour
     public bool LeaderboardActive { get; set; }
     public int SuperPowered { get; private set; }
 
-    [SerializeField] private int SideLength;
     [SerializeField] private TileObject originalTile;
     [SerializeField] private Player originalPlayer;
     [SerializeField] private int defaultStepNo;
@@ -35,8 +34,8 @@ public class GameControl : MonoBehaviour
     private int toFill;
     private bool alreadyBoosted;
 
-    public static bool[] deadPlayerList;
-
+    public static bool[] DeadPlayerList;
+    public static int SideLength;
 
     void Start()
     {
@@ -50,12 +49,12 @@ public class GameControl : MonoBehaviour
         players = new Player[4];
         playerDebts=new int[4];
         playerPositions =new int[4];
-        if(deadPlayerList.Length!=4)
+        if(DeadPlayerList.Length!=4)
         {
-            deadPlayerList = new bool[4];
-            for(int i=0;i<deadPlayerList.Length;i++)
+            DeadPlayerList = new bool[4];
+            for(int i=0;i<DeadPlayerList.Length;i++)
             {
-                deadPlayerList[i] = false;
+                DeadPlayerList[i] = false;
             }
         }
         StepCount = 0;
@@ -174,7 +173,7 @@ public class GameControl : MonoBehaviour
             }
         }
         int p = scores[0][biggest] - scores[0][secondBiggest];
-        return  p>= 50 ? 12: (p>=37 ? 7: 0);
+        return  p>= 50.0/400.0 * board.Length ? 12: (p>= 37.0/400.0 * board.Length ? 7: 0);
     }
 
     void ReplenishPowerUps()
@@ -298,7 +297,7 @@ public class GameControl : MonoBehaviour
                     }
                 }
             }
-            if (deadPlayerList[CurrentTurn % 4])
+            if (DeadPlayerList[CurrentTurn % 4])
             {
                 return;
             }
@@ -336,7 +335,7 @@ public class GameControl : MonoBehaviour
             {
                 return -1;
             }
-            if (deadPlayerList[board[i].occupiedBy-1])
+            if (DeadPlayerList[board[i].occupiedBy-1])
             {
                 continue;
             }
@@ -406,7 +405,7 @@ public class GameControl : MonoBehaviour
 
     public void MovePlayer(int pos)
     {
-        if (board[pos].occupiedBy!=CurrentTurn%4+1 && board[pos].occupiedBy!=0 && !deadPlayerList[board[pos].occupiedBy-1] && SuperPowered!=1)
+        if (board[pos].occupiedBy!=CurrentTurn%4+1 && board[pos].occupiedBy!=0 && !DeadPlayerList[board[pos].occupiedBy-1] && SuperPowered!=1)
         {
             StepCount--;
         }
@@ -612,11 +611,6 @@ public class GameControl : MonoBehaviour
             }
         }
         return true;
-    }
-
-    public bool IsDead(int playerNo)
-    {
-        return deadPlayerList[playerNo % 4];
     }
 
     //2D array, first chooses the player, then index 0 is the occupied tile count and index 1 is debt count multiplied by -1.

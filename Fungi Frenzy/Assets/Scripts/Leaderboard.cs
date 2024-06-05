@@ -72,7 +72,7 @@ public class Leaderboard : MonoBehaviour
         Color color = new(1, 1, 1, (clicked ? 1 : 0));
         for(int i= 0; i < sprites.Length; i++) 
         {
-            if(i!=0 && gameControl.IsDead(i-1))
+            if(i!=0 && GameControl.DeadPlayerList[i - 1])
             {
                 continue;
             }
@@ -81,7 +81,7 @@ public class Leaderboard : MonoBehaviour
         int[][] scores = gameControl.ScoreCount();
         for(int i= 0;i<canvases.Length;i++)
         {
-            if (gameControl.IsDead(i))
+            if (GameControl.DeadPlayerList[i])
             {
                 continue;
             }

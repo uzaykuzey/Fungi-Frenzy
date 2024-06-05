@@ -135,7 +135,7 @@ public class TileObject : MonoBehaviour
         {
             GetComponent<SpriteRenderer>().color = signal == 1 ? PowerUpColors[3] : signal==-1 ? PowerUpColors[4]: Color.HSVToRGB(signalHue,1,1);
         }
-        else if (occupiedBy!=0&&gameControl.IsDead(occupiedBy-1))
+        else if (occupiedBy!=0&&GameControl.DeadPlayerList[occupiedBy-1])
         {
             tileRenderer.color = Color.gray;
         }
@@ -157,7 +157,7 @@ public class TileObject : MonoBehaviour
         }
         if(gameControl.StealingAndDonating!=0)
         {
-            if(occupiedBy!=0&&occupiedBy-1!=gameControl.CurrentTurn%4&&!gameControl.IsDead(occupiedBy - 1))
+            if(occupiedBy!=0&&occupiedBy-1!=gameControl.CurrentTurn%4&&!GameControl.DeadPlayerList[occupiedBy - 1])
             { 
                 signalEffecting = occupiedBy;
                 signal = gameControl.StealingAndDonating;

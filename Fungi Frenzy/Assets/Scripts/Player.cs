@@ -6,7 +6,7 @@ public class Player : MonoBehaviour
     [SerializeField] private Sprite secret;
     [SerializeField] private GameControl gameControl;
     private static Sprite[] useSprites;
-    private static KeyCode[] code;
+    private static readonly KeyCode[] code = new KeyCode[] { KeyCode.UpArrow, KeyCode.UpArrow, KeyCode.DownArrow, KeyCode.DownArrow, KeyCode.LeftArrow, KeyCode.RightArrow, KeyCode.LeftArrow, KeyCode.RightArrow, KeyCode.B, KeyCode.A };
     private static int secretProgress;
     public int playerNo;
     private static bool canProgress;
@@ -23,7 +23,6 @@ public class Player : MonoBehaviour
             useSprites[i] = gameControl.GetSprite(i);
         }
         secretProgress = 0;
-        code = new KeyCode[] { KeyCode.UpArrow, KeyCode.UpArrow , KeyCode.DownArrow, KeyCode.DownArrow, KeyCode.LeftArrow, KeyCode.RightArrow, KeyCode.LeftArrow, KeyCode.RightArrow , KeyCode.B, KeyCode.A};
     }
 
     // Update is called once per frame
