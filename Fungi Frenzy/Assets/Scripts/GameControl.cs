@@ -15,7 +15,6 @@ public class GameControl : MonoBehaviour
     public int SuperPowered { get; private set; }
 
     [SerializeField] private int SideLength;
-    [SerializeField] private bool[] deadPlayerList;
     [SerializeField] private TileObject originalTile;
     [SerializeField] private Player originalPlayer;
     [SerializeField] private int defaultStepNo;
@@ -35,6 +34,8 @@ public class GameControl : MonoBehaviour
     private int eatenPowerUps;
     private int toFill;
     private bool alreadyBoosted;
+
+    public static bool[] deadPlayerList;
 
 
     void Start()
