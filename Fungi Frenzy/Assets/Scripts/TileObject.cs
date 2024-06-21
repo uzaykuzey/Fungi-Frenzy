@@ -15,6 +15,7 @@ public class TileObject : MonoBehaviour
     public int signalEffecting;
     public float signalHue;
     public bool previouslySignaled;
+    private float lastClicked;
     [SerializeField] private GameControl gameControl;
     private static float hue;
     private static float alphaPo;
@@ -175,5 +176,10 @@ public class TileObject : MonoBehaviour
         {
             gameControl.MovePlayer(boardPosition);
         }
+        else if(Time.time-lastClicked<0.2)
+        {
+            gameControl.AutoMove(boardPosition);
+        }
+        lastClicked = Time.time;
     }
 }

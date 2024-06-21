@@ -403,6 +403,51 @@ public class GameControl : MonoBehaviour
         return false;
     }
 
+    public void AutoMove(int position)
+    {
+        Vector2 destination = GetBoardCoordinate(position);
+        Vector2 start = GetBoardCoordinate(playerPositions[CurrentTurn % 4]);
+        if(destination.x-start.x == 0 || destination.y-start.y == 0)
+        {
+            Vector2 currentPos = start;
+            int cost = 0;
+            Vector2 direction=(destination-start).normalized;
+            while(destination!=currentPos)
+            {
+                currentPos += direction;
+                if (board[GetBoardPosition(currentPos)].occupiedBy == CurrentTurn % 4 + 1)
+                {
+                    return;
+                }
+                else if(board[GetBoardPosition(currentPos)].occupiedBy == 0)
+                {
+                    cost++;
+                }
+                else
+                {
+                    cost += 2;
+                }
+                if(board[GetBoardPosition(currentPos)].powerUp==1)
+                {
+                    cost -= 3;
+                }
+                else if(((board[GetBoardPosition(currentPos)].powerUp != 0 || cost >= StepCount) && currentPos!=destination) || board[GetBoardPosition(currentPos)].hasPlayerOn)
+                {
+                    return;
+                }
+            }
+            if(cost<=StepCount)
+            {
+                currentPos = start;
+                while (currentPos!=destination)
+                {
+                    currentPos += direction;
+                    MovePlayer(GetBoardPosition(currentPos));
+                }
+            }
+        }
+    }
+
     public void MovePlayer(int pos)
     {
         if (board[pos].occupiedBy!=CurrentTurn%4+1 && board[pos].occupiedBy!=0 && !DeadPlayerList[board[pos].occupiedBy-1] && SuperPowered!=1)
