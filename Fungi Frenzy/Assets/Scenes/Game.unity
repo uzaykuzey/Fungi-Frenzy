@@ -1230,6 +1230,8 @@ MonoBehaviour:
   dice1Rb: {fileID: 582712966}
   dice2Rb: {fileID: 871143430}
   gameControl: {fileID: 801877492}
+  roll: {fileID: 21300000, guid: 4d472920fab241248a0e44d94c7202ff, type: 3}
+  back: {fileID: 21300000, guid: 87095b84c03c3914bbb3a26bf959f924, type: 3}
 --- !u!61 &404508991
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -2165,8 +2167,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 36487a1d8a53a694fa235ec0126413fa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  SideLength: 20
-  deadPlayerList: 00000000
   originalTile: {fileID: 1292146393}
   originalPlayer: {fileID: 1062605757}
   defaultStepNo: 7
@@ -3345,11 +3345,11 @@ MonoBehaviour:
   hasPlayerOn: 0
   powerUp: 0
   food: {fileID: 109628377}
-  moveable: 0
   boardPosition: 0
   signal: 0
   signalTime: 0
   signalEffecting: 0
+  signalHue: 0
   previouslySignaled: 0
   gameControl: {fileID: 801877492}
 --- !u!61 &1292146394

@@ -29,7 +29,7 @@ public class Dice : MonoBehaviour
         switch (name.ToLower())
         {
             case "left":
-                dice.velocity += new Vector3(1, 0, 0);
+                dice.velocity += new Vector3( 1, 0, 0);
                 break;
             case "right":
                 dice.velocity += new Vector3(-1, 0, 0);
@@ -38,7 +38,7 @@ public class Dice : MonoBehaviour
                 dice.velocity += new Vector3(0, -1, 0);
                 break;
             case "bottom":
-                dice.velocity += new Vector3(0, 1, 0);
+                dice.velocity += new Vector3(0,  1, 0);
                 break;
         }
 

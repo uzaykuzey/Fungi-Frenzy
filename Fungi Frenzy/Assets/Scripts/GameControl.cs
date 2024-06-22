@@ -419,12 +419,16 @@ public class GameControl : MonoBehaviour
                 {
                     return;
                 }
-                else if(board[GetBoardPosition(currentPos)].occupiedBy == 0)
+                else if(board[GetBoardPosition(currentPos)].occupiedBy == 0 || DeadPlayerList[board[GetBoardPosition(currentPos)].occupiedBy-1])
                 {
                     cost++;
                 }
                 else
                 {
+                    if(currentPos == destination)
+                    {
+                        cost--;
+                    }
                     cost += 2;
                 }
                 if(board[GetBoardPosition(currentPos)].powerUp==1)

@@ -1,10 +1,13 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class DiceRolling : MonoBehaviour
 {
     [SerializeField] private Rigidbody dice1Rb;
     [SerializeField] private Rigidbody dice2Rb;
     [SerializeField] private GameControl gameControl;
+    [SerializeField] private Sprite roll;
+    [SerializeField] private Sprite back;
     private MeshRenderer dice1Renderer;
     private MeshRenderer dice2Renderer;
     private SpriteRenderer rollButton;
@@ -46,6 +49,7 @@ public class DiceRolling : MonoBehaviour
 
     private void FixedUpdate()
     {
+        rollButton.sprite = gameControl.GameOver ? back: roll;
         if(gameControl.DiceRolling==1 && Time.time - lastFromRoll > 8)
         {
             lastFromRoll = Time.time;
@@ -77,13 +81,18 @@ public class DiceRolling : MonoBehaviour
             dice1Renderer.enabled = false;
             dice2Renderer.enabled=false;
         }
-        rollButton.color= shifted? Color.white : TileObject.PlayerColors[gameControl.CurrentTurn % 4 + 1];
+        rollButton.color= (shifted || gameControl.GameOver) ? Color.white : TileObject.PlayerColors[gameControl.CurrentTurn % 4 + 1];
     }
 
     private void OnMouseDown()
     {
-        if(gameControl.DiceRolling!=0 || gameControl.GameOver)
+        if(gameControl.DiceRolling!=0)
         {
+            return;
+        }
+        if(gameControl.GameOver)
+        {
+            SceneManager.LoadScene("Start Menu");
             return;
         }
         dice1.transform.position = new Vector3(-5, 0, -3.1f);
