@@ -1,22 +1,24 @@
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class GameControl : MonoBehaviour
 {
     // Start is called before the first frame update
+    public static GameControl MainGameControl { get; private set; }
+    public static Multiplayer ThisMultiplayer { get; set; }
     public int OccupyAmount { get; private set; }
     public bool GameOver { get; private set; }
-    public int CurrentTurn { get; private set; }
+    public int CurrentTurn { get; set; }
     public int DiceRolling { get; set; } //0: dice can be thrown, 1: dice has been thrown, 2: the value first read, 3: wait for the turn to end
     public int StealingAndDonating { get; private set; }
-    public int StepCount { get; private set; }
+    public int StepCount { get; set; }
     public bool LeaderboardActive { get; set; }
     public int SuperPowered { get; private set; }
 
     [SerializeField] private TileObject originalTile;
     [SerializeField] private Player originalPlayer;
-    [SerializeField] private int defaultStepNo;
     [SerializeField] private Text remainingStepCounter;
     [SerializeField] private Text remainingStepLabel;
     [SerializeField] private SpriteRenderer winnerDisplay;
@@ -25,20 +27,26 @@ public class GameControl : MonoBehaviour
     [SerializeField] private Sprite[] sprites;
     [SerializeField] private Leaderboard leaderboard;
 
-    private TileObject[] board;
-    private Player[] players;
+    public TileObject[] board;
+    public Player[] players;
     private int[] playerDebts;
     private int biggestTurnCounter;
     private int[] playerPositions;
     private int eatenPowerUps;
     private int toFill;
     private bool alreadyBoosted;
+    public DiceRolling RollButton;
 
     public static bool[] DeadPlayerList;
     public static int SideLength;
+    public static bool multiplayer;
+
+    
+
 
     void Start()
     {
+        MainGameControl = this;
         alreadyBoosted = false;
         StealingAndDonating = 0;
         DiceRolling = 3;
@@ -68,6 +76,7 @@ public class GameControl : MonoBehaviour
         SuperPowered = 0;
         CreateBoard(cubeSize);
     }
+
 
     void CreateBoard(float cubeSize)
     {
@@ -178,6 +187,10 @@ public class GameControl : MonoBehaviour
 
     void ReplenishPowerUps()
     {
+        if(multiplayer && (ThisMultiplayer==null || !ThisMultiplayer.IsHost))
+        {
+            return;
+        }
         int chanceFactor = board.Length;
         float sigmoidReciprocal = 1 + Mathf.Exp(-biggestTurnCounter);
         int probabilitySuper = SupersCanSpawn() ? ((int)(4.4 / (1 + Mathf.Exp(-biggestTurnCounter * 0.7054651f)) - 2.2) + SuperBoost()): 0;
@@ -231,6 +244,10 @@ public class GameControl : MonoBehaviour
             }
             counter--;
             eatenPowerUps--;
+        }
+        if(multiplayer)
+        {
+            ThisMultiplayer.RequestSynchServerRpc();
         }
     }
 
@@ -595,6 +612,10 @@ public class GameControl : MonoBehaviour
         if(!GameOver && DiceRolling==3)
         {
             remainingStepCounter.text = (StepCount<=0 ? 0: StepCount) + "";
+        }
+        if(multiplayer)
+        {
+
         }
     }
 

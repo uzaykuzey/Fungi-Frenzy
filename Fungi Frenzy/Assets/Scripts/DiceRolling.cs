@@ -45,6 +45,8 @@ public class DiceRolling : MonoBehaviour
         {
             shiftProgression = false;
         }
+
+
     }
 
     private void FixedUpdate()
@@ -82,23 +84,54 @@ public class DiceRolling : MonoBehaviour
             dice2Renderer.enabled=false;
         }
         rollButton.color= (shifted || gameControl.GameOver) ? Color.white : TileObject.PlayerColors[gameControl.CurrentTurn % 4 + 1];
+
+        if (GameControl.multiplayer && gameControl.DiceRolling < 3 && GameControl.ThisMultiplayer != null)
+        {
+            if (GameControl.ThisMultiplayer.IsHost)
+            {
+                GameControl.ThisMultiplayer.dice1Position.Value = dice1.transform.position;
+                GameControl.ThisMultiplayer.dice1Rotation.Value = dice1.transform.rotation;
+                GameControl.ThisMultiplayer.dice2Position.Value = dice2.transform.position;
+                GameControl.ThisMultiplayer.dice2Rotation.Value = dice2.transform.rotation;
+            }
+            else
+            {
+                dice1.transform.position = GameControl.ThisMultiplayer.dice1Position.Value;
+                dice1.transform.rotation = GameControl.ThisMultiplayer.dice1Rotation.Value;
+
+                dice2.transform.position = GameControl.ThisMultiplayer.dice2Position.Value;
+                dice2.transform.rotation = GameControl.ThisMultiplayer.dice2Rotation.Value;
+            }
+        }
     }
 
     private void OnMouseDown()
     {
-        if(gameControl.DiceRolling!=0)
+        if(GameControl.multiplayer) 
+        {
+            GameControl.ThisMultiplayer.RollClickedServerRpc();
+        }
+        else
+        {
+            Clicked();
+        }
+    }
+
+    public void Clicked()
+    {
+        if (gameControl.DiceRolling != 0)
         {
             return;
         }
-        if(gameControl.GameOver)
+        if (gameControl.GameOver)
         {
             SceneManager.LoadScene("Start Menu");
             return;
         }
         dice1.transform.position = new Vector3(-5, 0, -3.1f);
         dice2.transform.position = new Vector3(5, 0, -3.1f);
-        dice1Renderer.enabled=true;
-        dice2Renderer.enabled=true;
+        dice1Renderer.enabled = true;
+        dice2Renderer.enabled = true;
         RollDice(dice1Rb);
         RollDice(dice2Rb);
         gameControl.DiceRolling = 1;

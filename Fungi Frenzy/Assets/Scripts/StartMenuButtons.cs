@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -12,42 +13,70 @@ public class StartMenuButtons : MonoBehaviour
     {
         FourPlayers();
         TwentyxTwenty();
-        buttons[0].onClick.AddListener(PlayButton);
-        buttons[1].onClick.AddListener(TwoPlayers);
-        buttons[2].onClick.AddListener(ThreePlayers);
+
+        buttons[0].onClick.AddListener(() => 
+        {
+            GameControl.multiplayer = false;
+            SceneManager.LoadScene("Game");
+        });
+
+        buttons[1].onClick.AddListener(() =>
+        {
+            GameControl.DeadPlayerList = new bool[4];
+            for (int i = 0; i < 4; i++)
+            {
+                GameControl.DeadPlayerList[i] = i % 2 == 1;
+            }
+            buttons[1].GetComponent<Image>().color = Color.white;
+            buttons[2].GetComponent<Image>().color = Color.gray;
+            buttons[3].GetComponent<Image>().color = Color.gray;
+        });
+
+        buttons[2].onClick.AddListener(() =>
+        {
+            GameControl.DeadPlayerList = new bool[4];
+            for (int i = 0; i < 4; i++)
+            {
+                GameControl.DeadPlayerList[i] = i == 2;
+            }
+            buttons[2].GetComponent<Image>().color = Color.white;
+            buttons[1].GetComponent<Image>().color = Color.gray;
+            buttons[3].GetComponent<Image>().color = Color.gray;
+        });
+
         buttons[3].onClick.AddListener(FourPlayers);
-        buttons[4].onClick.AddListener(FifteenxFifteen);
+
+        buttons[4].onClick.AddListener(() =>
+        {
+            GameControl.SideLength = 15;
+            buttons[4].GetComponent<Image>().color = Color.white;
+            buttons[5].GetComponent<Image>().color = Color.gray;
+            buttons[6].GetComponent<Image>().color = Color.gray;
+        });
+
         buttons[5].onClick.AddListener(TwentyxTwenty);
-        buttons[6].onClick.AddListener(TwentyFivexTwentyFive);
-    }
 
-    void PlayButton()
-    {
-        SceneManager.LoadScene("Game");
-    }
-
-    void TwoPlayers()
-    {
-        GameControl.DeadPlayerList = new bool[4];
-        for (int i = 0; i < 4; i++)
+        buttons[6].onClick.AddListener(() =>
         {
-            GameControl.DeadPlayerList[i] = i % 2 == 1;
-        }
-        buttons[1].GetComponent<Image>().color = Color.white;
-        buttons[2].GetComponent<Image>().color = Color.gray;
-        buttons[3].GetComponent<Image>().color = Color.gray;
-    }
+            GameControl.SideLength = 25;
+            buttons[6].GetComponent<Image>().color = Color.white;
+            buttons[5].GetComponent<Image>().color = Color.gray;
+            buttons[4].GetComponent<Image>().color = Color.gray;
+        });
 
-    void ThreePlayers()
-    {
-        GameControl.DeadPlayerList = new bool[4];
-        for (int i = 0; i < 4; i++)
+        buttons[7].onClick.AddListener(() =>
         {
-            GameControl.DeadPlayerList[i] = i==2;
-        }
-        buttons[2].GetComponent<Image>().color = Color.white;
-        buttons[1].GetComponent<Image>().color = Color.gray;
-        buttons[3].GetComponent<Image>().color = Color.gray;
+            NetworkManager.Singleton.StartHost();
+            GameControl.multiplayer = true;
+            SceneManager.LoadScene("Game");
+        });
+
+        buttons[8].onClick.AddListener(() =>
+        {
+            NetworkManager.Singleton.StartClient();
+            GameControl.multiplayer = true;
+            SceneManager.LoadScene("Game");
+        });
     }
 
     void FourPlayers()
@@ -70,19 +99,4 @@ public class StartMenuButtons : MonoBehaviour
         buttons[6].GetComponent<Image>().color = Color.gray;
     }
 
-    void FifteenxFifteen()
-    {
-        GameControl.SideLength = 15;
-        buttons[4].GetComponent<Image>().color = Color.white;
-        buttons[5].GetComponent<Image>().color = Color.gray;
-        buttons[6].GetComponent<Image>().color = Color.gray;
-    }
-
-    void TwentyFivexTwentyFive()
-    {
-        GameControl.SideLength = 25;
-        buttons[6].GetComponent<Image>().color = Color.white;
-        buttons[5].GetComponent<Image>().color = Color.gray;
-        buttons[4].GetComponent<Image>().color = Color.gray;
-    }
 }

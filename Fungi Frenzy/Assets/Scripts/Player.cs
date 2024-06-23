@@ -47,9 +47,18 @@ public class Player : MonoBehaviour
         }
         if(secretProgress==code.Length)
         {
-            useSprites[gameControl.CurrentTurn%4] = secret;
-            secretProgress = -1;
+            ActivateSecret();
+            if(GameControl.multiplayer)
+            {
+                GameControl.ThisMultiplayer.SecretServerRpc();
+            }
         }
+    }
+
+    public void ActivateSecret()
+    {
+        useSprites[gameControl.CurrentTurn % 4] = secret;
+        secretProgress = -1;
     }
 
     private void FixedUpdate()

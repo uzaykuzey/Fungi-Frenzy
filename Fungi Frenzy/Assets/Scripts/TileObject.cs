@@ -15,7 +15,7 @@ public class TileObject : MonoBehaviour
     public int signalEffecting;
     public float signalHue;
     public bool previouslySignaled;
-    private float lastClicked;
+    public float lastClicked;
     [SerializeField] private GameControl gameControl;
     private static float hue;
     private static float alphaPo;
@@ -152,31 +152,43 @@ public class TileObject : MonoBehaviour
 
     private void OnMouseDown()
     {
-        if(gameControl.GameOver || gameControl.DiceRolling<=2 || gameControl.LeaderboardActive)
+        if(GameControl.multiplayer)
+        {
+            GameControl.ThisMultiplayer.TileClickedServerRpc(boardPosition);
+        }
+        else
+        {
+            Click();
+        }
+    }
+
+    public void Click()
+    {
+        if (gameControl.GameOver || gameControl.DiceRolling <= 2)
         {
             return;
         }
-        if(gameControl.StealingAndDonating!=0)
+        if (gameControl.StealingAndDonating != 0)
         {
-            if(occupiedBy!=0&&occupiedBy-1!=gameControl.CurrentTurn%4&&!GameControl.DeadPlayerList[occupiedBy - 1])
-            { 
+            if (occupiedBy != 0 && occupiedBy - 1 != gameControl.CurrentTurn % 4 && !GameControl.DeadPlayerList[occupiedBy - 1])
+            {
                 signalEffecting = occupiedBy;
                 signal = gameControl.StealingAndDonating;
                 gameControl.DonateAndSteal(occupiedBy - 1);
             }
         }
-        else if(gameControl.OccupyAmount>0)
+        else if (gameControl.OccupyAmount > 0)
         {
-            if(gameControl.CanBeOccupiedByPowerUp(boardPosition))
+            if (gameControl.CanBeOccupiedByPowerUp(boardPosition))
             {
                 gameControl.OccupyLand(boardPosition);
             }
         }
-        else if(gameControl.CanMove(boardPosition) && !hasPlayerOn && gameControl.StepCount > 0)
+        else if (gameControl.CanMove(boardPosition) && !hasPlayerOn && gameControl.StepCount > 0)
         {
             gameControl.MovePlayer(boardPosition);
         }
-        else if(Time.time-lastClicked<0.2)
+        else if (Time.time - lastClicked < 0.2)
         {
             gameControl.AutoMove(boardPosition);
         }
