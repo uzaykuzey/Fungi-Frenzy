@@ -3,11 +3,13 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class Multiplayer : NetworkBehaviour
 {
     // Start is called before the first frame update
     private GameControl gameControl=null;
+    public static Multiplayer Instance;
     private bool gameControlAssigned;
 
     public NetworkVariable<int> CurrentStepCount = new(0);
@@ -34,6 +36,7 @@ public class Multiplayer : NetworkBehaviour
         {
             gameControl.CurrentTurn = newValue;
         };
+        Instance = this;
     }
 
     // Update is called once per frame
@@ -135,5 +138,42 @@ public class Multiplayer : NetworkBehaviour
     public void SecretClientRpc()
     {
         gameControl.players[0].ActivateSecret();
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    public void StartGameServerRpc(int playerCount)
+    {
+        StartGameClientRpc(playerCount);
+    }
+
+    [ClientRpc]
+    public void StartGameClientRpc(int playerCount)
+    {
+
+        /*else if(playerCount==2)
+        {
+            GameControl.DeadPlayerList = new bool[4];
+            for (int i = 0; i < 4; i++)
+            {
+                GameControl.DeadPlayerList[i] = i % 2 == 1;
+            }
+        }
+        else if(playerCount==3)
+        {
+            GameControl.DeadPlayerList = new bool[4];
+            for (int i = 0; i < 4; i++)
+            {
+                GameControl.DeadPlayerList[i] = i == 2;
+            }
+        }
+        else*/
+        {
+            GameControl.DeadPlayerList = new bool[4];
+            for (int i = 0; i < 4; i++)
+            {
+                GameControl.DeadPlayerList[i] = false;
+            }
+        }
+        SceneManager.LoadScene("Game");
     }
 }

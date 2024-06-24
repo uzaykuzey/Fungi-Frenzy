@@ -1,7 +1,7 @@
 using Unity.Netcode;
 using UnityEngine;
 
-public class Dice : NetworkBehaviour
+public class Dice : MonoBehaviour
 {
     private Rigidbody dice;
     [SerializeField] private Transform[] sides;

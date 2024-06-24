@@ -6,7 +6,7 @@ using UnityEngine.UI;
 public class GameControl : MonoBehaviour
 {
     // Start is called before the first frame update
-    public static GameControl MainGameControl { get; private set; }
+    public static GameControl MainGameControl { get; set; }
     public static Multiplayer ThisMultiplayer { get; set; }
     public int OccupyAmount { get; private set; }
     public bool GameOver { get; private set; }
