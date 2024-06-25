@@ -9,7 +9,7 @@ public class GameControl : MonoBehaviour
     public static GameControl MainGameControl { get; set; }
     public static Multiplayer ThisMultiplayer { get; set; }
     public int OccupyAmount { get; set; }
-    public bool GameOver { get; private set; }
+    public bool GameOver { get; set; }
     public int CurrentTurn { get; set; }
     public int DiceRolling { get; set; } //0: dice can be thrown, 1: dice has been thrown, 2: the value first read, 3: wait for the turn to end
     public int StealingAndDonating { get; set; }
@@ -19,7 +19,7 @@ public class GameControl : MonoBehaviour
 
     [SerializeField] private TileObject originalTile;
     [SerializeField] private Player originalPlayer;
-    [SerializeField] private Text remainingStepCounter;
+    public Text remainingStepCounter;
     [SerializeField] private Text remainingStepLabel;
     [SerializeField] private SpriteRenderer winnerDisplay;
     [SerializeField] private SpriteRenderer crown;
@@ -245,10 +245,6 @@ public class GameControl : MonoBehaviour
             counter--;
             eatenPowerUps--;
         }
-        if(multiplayer)
-        {
-            ThisMultiplayer.RequestSynchServerRpc();
-        }
     }
 
     public void DiceToStepCount(int value)
@@ -275,7 +271,8 @@ public class GameControl : MonoBehaviour
 
     void Update()
     {
-        if(GameOver)
+        
+        if(GameOver || !ThisMultiplayer.IsHost)
         {
             return;
         }
@@ -296,21 +293,13 @@ public class GameControl : MonoBehaviour
                 toFill = eatenPowerUps / 4;
                 if (winner != -1)
                 {
-                    remainingStepCounter.text = "Player " + (winner + 1);
-                    remainingStepLabel.text = "Winner is: ";
-                    remainingStepCounter.fontSize = 40;
-                    winnerDisplay.gameObject.GetComponent<Player>().playerNo = winner;
-                    winnerDisplay.enabled = true;
-                    crown.enabled = true;
-                    crownJewels.enabled = true;
-                    GameOver = true;
-                    if(winner==1 || winner==2)
+                    if(multiplayer)
                     {
-                        winnerDisplay.transform.position = new Vector3(6.97f, -1.96f, 0);
+                        ThisMultiplayer.WinnerDisplayServerRpc(winner);
                     }
                     else
                     {
-                        winnerDisplay.transform.position = new Vector3(7.08f, -1.96f, 0);
+                        WinnerDisplayFunction(winner);
                     }
                 }
             }
@@ -332,9 +321,33 @@ public class GameControl : MonoBehaviour
             }*/
             DiceRolling = 0;
             leaderboard.ColorUpdate();
+            if(multiplayer)
+            {
+                ThisMultiplayer.RequestSynchServerRpc(true);
+            }
             return;
         }
 
+    }
+
+    public void WinnerDisplayFunction(int winner)
+    {
+        remainingStepCounter.text = "Player " + (winner + 1);
+        remainingStepLabel.text = "Winner is: ";
+        remainingStepCounter.fontSize = 40;
+        winnerDisplay.gameObject.GetComponent<Player>().playerNo = winner;
+        winnerDisplay.enabled = true;
+        crown.enabled = true;
+        crownJewels.enabled = true;
+        GameOver = true;
+        if (winner == 1 || winner == 2)
+        {
+            winnerDisplay.transform.position = new Vector3(6.97f, -1.96f, 0);
+        }
+        else
+        {
+            winnerDisplay.transform.position = new Vector3(7.08f, -1.96f, 0);
+        }
     }
 
     public Sprite GetSprite(int i)

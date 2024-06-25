@@ -12,9 +12,6 @@ public class Multiplayer : NetworkBehaviour
     public static Multiplayer Instance;
     private bool gameControlAssigned;
 
-    public NetworkVariable<int> CurrentStepCount = new(0);
-    public NetworkVariable<int> CurrentTurn = new(0);
-
 
     public NetworkVariable<Vector3> dice1Position = new NetworkVariable<Vector3>(new Vector3(0,0,0)) ;
     public NetworkVariable<Vector3> dice2Position = new NetworkVariable<Vector3>(new Vector3(0,0,0));
@@ -27,15 +24,6 @@ public class Multiplayer : NetworkBehaviour
     {
         gameControlAssigned = false;
         DontDestroyOnLoad(this);
-        CurrentStepCount.OnValueChanged += (int prevValue, int newValue) =>
-        {
-            gameControl.StepCount = newValue;
-        };
-
-        CurrentTurn.OnValueChanged += (int prevValue, int newValue) =>
-        {
-            gameControl.CurrentTurn = newValue;
-        };
 
         Instance = this;
     }
@@ -50,20 +38,11 @@ public class Multiplayer : NetworkBehaviour
         gameControl=GameControl.MainGameControl;
         GameControl.ThisMultiplayer = this;
         gameControlAssigned = true;
-        RequestSynchServerRpc();
-    }
-
-    private void FixedUpdate()
-    {
-        if(gameControl!=null && IsHost)
-        {
-            CurrentStepCount.Value = gameControl.StepCount;
-            CurrentTurn.Value= gameControl.CurrentTurn;
-        }
+        RequestSynchServerRpc(false);
     }
 
     [ServerRpc(RequireOwnership = false)]
-    public void RequestSynchServerRpc()
+    public void RequestSynchServerRpc(bool endTurnCall)
     {
         int[] occupied = new int[gameControl.board.Length];
         int count = 0;
@@ -94,16 +73,36 @@ public class Multiplayer : NetworkBehaviour
                 k++;
             }
         }
-        SynchronizeClientRpc(powerUpPositions, powerUpKinds,occupied, playerPositions, GameControl.DeadPlayerList);
+        int[] otherAttributes = new int[7];
+        otherAttributes[0] = gameControl.CurrentTurn;
+        otherAttributes[1] = gameControl.DiceRolling;
+        otherAttributes[2] = gameControl.OccupyAmount;
+        otherAttributes[3] = gameControl.GameOver ? 1 : 0;
+        otherAttributes[4] = gameControl.StealingAndDonating;
+        otherAttributes[5] = gameControl.StepCount;
+        otherAttributes[6] = gameControl.SuperPowered;
+        SynchronizeClientRpc(powerUpPositions, powerUpKinds,occupied, playerPositions, GameControl.DeadPlayerList, otherAttributes, endTurnCall);
     }
 
     [ClientRpc]
-    private void SynchronizeClientRpc(int[] powerupPositions, int[] powerupKinds, int[] occupied, int[] playerPositions, bool[] deadPlayerList)
+    private void SynchronizeClientRpc(int[] powerupPositions, int[] powerupKinds, int[] occupied, int[] playerPositions, bool[] deadPlayerList, int[] otherAttributes, bool endTurnCall)
     {
         if(IsHost || gameControl==null)
         {
             return;
         }
+        if(endTurnCall)
+        {
+            gameControl.remainingStepCounter.text = "0";
+        }
+        gameControl.CurrentTurn = otherAttributes[0];
+        gameControl.DiceRolling= otherAttributes[1];
+        gameControl.OccupyAmount= otherAttributes[2];
+        gameControl.GameOver = otherAttributes[3] == 1;
+        gameControl.StealingAndDonating= otherAttributes[4];
+        gameControl.StepCount= otherAttributes[5];
+        gameControl.SuperPowered = otherAttributes[6];
+        
         for(int i=0;i<gameControl.board.Length;i++)
         {
             gameControl.board[i].powerUp = 0;
@@ -125,6 +124,7 @@ public class Multiplayer : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     public void TileClickedServerRpc(int position)
     {
+        RequestSynchServerRpc(false);
         TileClickedClientRpc(position);
     }
 
@@ -137,6 +137,7 @@ public class Multiplayer : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     public void RollClickedServerRpc()
     {
+        RequestSynchServerRpc(false);
         RollClickedClientRpc();
     }
 
@@ -193,5 +194,17 @@ public class Multiplayer : NetworkBehaviour
             }
         }
         SceneManager.LoadScene("Game");
+    }
+
+    [ServerRpc]
+    public void WinnerDisplayServerRpc(int winner)
+    {
+        WinnerDisplayClientRpc(winner);
+    }
+
+    [ClientRpc]
+    public void WinnerDisplayClientRpc(int winner)
+    {
+        gameControl.WinnerDisplayFunction(winner);
     }
 }
