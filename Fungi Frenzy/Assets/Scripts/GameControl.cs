@@ -8,14 +8,14 @@ public class GameControl : MonoBehaviour
     // Start is called before the first frame update
     public static GameControl MainGameControl { get; set; }
     public static Multiplayer ThisMultiplayer { get; set; }
-    public int OccupyAmount { get; private set; }
+    public int OccupyAmount { get; set; }
     public bool GameOver { get; private set; }
     public int CurrentTurn { get; set; }
     public int DiceRolling { get; set; } //0: dice can be thrown, 1: dice has been thrown, 2: the value first read, 3: wait for the turn to end
-    public int StealingAndDonating { get; private set; }
+    public int StealingAndDonating { get; set; }
     public int StepCount { get; set; }
     public bool LeaderboardActive { get; set; }
-    public int SuperPowered { get; private set; }
+    public int SuperPowered { get; set; }
 
     [SerializeField] private TileObject originalTile;
     [SerializeField] private Player originalPlayer;
@@ -31,7 +31,7 @@ public class GameControl : MonoBehaviour
     public Player[] players;
     private int[] playerDebts;
     private int biggestTurnCounter;
-    private int[] playerPositions;
+    public int[] playerPositions;
     private int eatenPowerUps;
     private int toFill;
     private bool alreadyBoosted;

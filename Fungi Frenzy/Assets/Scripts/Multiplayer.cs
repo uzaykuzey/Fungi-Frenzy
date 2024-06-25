@@ -36,6 +36,7 @@ public class Multiplayer : NetworkBehaviour
         {
             gameControl.CurrentTurn = newValue;
         };
+
         Instance = this;
     }
 
@@ -64,6 +65,7 @@ public class Multiplayer : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     public void RequestSynchServerRpc()
     {
+        int[] occupied = new int[gameControl.board.Length];
         int count = 0;
         for(int i=0;i<gameControl.board.Length;i++)
         {
@@ -71,24 +73,32 @@ public class Multiplayer : NetworkBehaviour
             {
                 count++;
             }
+            occupied[i] = gameControl.board[i].occupiedBy;
         }
-        int[] positions=new int[count];
-        int[] kinds = new int[count];
+        int[] powerUpPositions=new int[count];
+        int[] powerUpKinds = new int[count];
+        int[] playerPositions = new int[4];
         int j = 0;
+        int k = 0;
         for(int i=0;i< gameControl.board.Length; i++)
         {
             if (gameControl.board[i].powerUp != 0)
             {
-                positions[j] = i;
-                kinds[j] = gameControl.board[i].powerUp;
+                powerUpPositions[j] = i;
+                powerUpKinds[j] = gameControl.board[i].powerUp;
                 j++;
             }
+            if (gameControl.board[i].hasPlayerOn)
+            {
+                playerPositions[k] = i;
+                k++;
+            }
         }
-        SynchronizeClientRpc(positions, kinds);
+        SynchronizeClientRpc(powerUpPositions, powerUpKinds,occupied, playerPositions, GameControl.DeadPlayerList);
     }
 
     [ClientRpc]
-    private void SynchronizeClientRpc(int[] powerupPositions, int[] powerupKinds)
+    private void SynchronizeClientRpc(int[] powerupPositions, int[] powerupKinds, int[] occupied, int[] playerPositions, bool[] deadPlayerList)
     {
         if(IsHost || gameControl==null)
         {
@@ -97,11 +107,19 @@ public class Multiplayer : NetworkBehaviour
         for(int i=0;i<gameControl.board.Length;i++)
         {
             gameControl.board[i].powerUp = 0;
+            gameControl.board[i].occupiedBy = occupied[i];
+            gameControl.board[i].hasPlayerOn = false;
         }
         for(int i=0;i<powerupPositions.Length;i++)
         {
             gameControl.board[powerupPositions[i]].powerUp = powerupKinds[i];
         }
+        foreach(int i in playerPositions)
+        {
+            gameControl.board[i].hasPlayerOn = true;
+            gameControl.playerPositions[gameControl.board[i].occupiedBy - 1] = i;
+        }
+        GameControl.DeadPlayerList = deadPlayerList;
     }
 
     [ServerRpc(RequireOwnership = false)]
