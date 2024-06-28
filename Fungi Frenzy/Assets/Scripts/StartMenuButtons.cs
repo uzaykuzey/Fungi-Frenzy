@@ -22,9 +22,30 @@ public class StartMenuButtons : MonoBehaviour
             SceneManager.LoadScene("Game");
         });
 
-        buttons[1].onClick.AddListener(TwoPlayers);
+        buttons[1].onClick.AddListener(() =>
+        {
+            GameControl.DeadPlayerList = new bool[4];
+            for (int i = 0; i < 4; i++)
+            {
+                GameControl.DeadPlayerList[i] = i % 2 == 1;
+            }
+            buttons[1].GetComponent<Image>().color = Color.white;
+            buttons[2].GetComponent<Image>().color = Color.gray;
+            buttons[3].GetComponent<Image>().color = Color.gray;
+        });
 
-        buttons[2].onClick.AddListener(ThreePlayers);
+        buttons[2].onClick.AddListener(() =>
+        {
+            GameControl.DeadPlayerList = new bool[4];
+            for (int i = 0; i < 4; i++)
+            {
+                GameControl.DeadPlayerList[i] = i == 2;
+            }
+            buttons[2].GetComponent<Image>().color = Color.white;
+            buttons[1].GetComponent<Image>().color = Color.gray;
+            buttons[3].GetComponent<Image>().color = Color.gray;
+
+        });
 
         buttons[3].onClick.AddListener(FourPlayers);
 
@@ -51,30 +72,6 @@ public class StartMenuButtons : MonoBehaviour
             GameControl.multiplayer = true;
             SceneManager.LoadScene("Lobby");
         });
-    }
-
-    void TwoPlayers()
-    {
-        GameControl.DeadPlayerList = new bool[4];
-        for (int i = 0; i < 4; i++)
-        {
-            GameControl.DeadPlayerList[i] = i % 2 == 1;
-        }
-        buttons[1].GetComponent<Image>().color = Color.white;
-        buttons[2].GetComponent<Image>().color = Color.gray;
-        buttons[3].GetComponent<Image>().color = Color.gray;
-    }
-
-    void ThreePlayers()
-    {
-        GameControl.DeadPlayerList = new bool[4];
-        for (int i = 0; i < 4; i++)
-        {
-            GameControl.DeadPlayerList[i] = i == 2;
-        }
-        buttons[2].GetComponent<Image>().color = Color.white;
-        buttons[1].GetComponent<Image>().color = Color.gray;
-        buttons[3].GetComponent<Image>().color = Color.gray;
     }
 
     void FourPlayers()

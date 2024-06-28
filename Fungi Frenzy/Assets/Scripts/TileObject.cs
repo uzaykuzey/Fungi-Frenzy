@@ -154,7 +154,7 @@ public class TileObject : MonoBehaviour
     {
         if(GameControl.multiplayer)
         {
-            GameControl.ThisMultiplayer.TileClickedServerRpc(boardPosition);
+            GameControl.ThisMultiplayer.TileClickedServerRpc(boardPosition, GameControl.ThisMultiplayer.OwnerClientId);
         }
         else
         {

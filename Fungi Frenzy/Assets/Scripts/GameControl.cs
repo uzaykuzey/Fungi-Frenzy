@@ -272,7 +272,7 @@ public class GameControl : MonoBehaviour
     void Update()
     {
         
-        if(GameOver || !ThisMultiplayer.IsHost)
+        if(GameOver || (multiplayer && !ThisMultiplayer.IsHost))
         {
             return;
         }
@@ -319,12 +319,12 @@ public class GameControl : MonoBehaviour
                 OccupyAmount = 0;
                 DiceRolling = 3;
             }*/
-            DiceRolling = 0;
-            leaderboard.ColorUpdate();
-            if(multiplayer)
+            if (multiplayer)
             {
                 ThisMultiplayer.RequestSynchServerRpc(true);
             }
+            DiceRolling = 0;
+            leaderboard.ColorUpdate();
             return;
         }
 
