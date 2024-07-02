@@ -46,7 +46,6 @@ public class GameControl : MonoBehaviour
 
     void Start()
     {
-        MainGameControl = this;
         alreadyBoosted = false;
         StealingAndDonating = 0;
         DiceRolling = 3;
@@ -271,8 +270,12 @@ public class GameControl : MonoBehaviour
 
     void Update()
     {
-        
-        if(GameOver || (multiplayer && !ThisMultiplayer.IsHost))
+        if(MainGameControl == null)
+        {
+            MainGameControl = this;
+            return;
+        }
+        if (GameOver || (multiplayer && !ThisMultiplayer.IsHost))
         {
             return;
         }

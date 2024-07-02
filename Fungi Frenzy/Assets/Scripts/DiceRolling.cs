@@ -38,6 +38,11 @@ public class DiceRolling : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if(gameControl.DiceRolling>=2)
+        {
+            dice1Renderer.enabled = false;
+            dice2Renderer.enabled = false;
+        }
         rollButton.color = (gameControl.GameOver) ? Color.white : TileObject.PlayerColors[gameControl.CurrentTurn % 4 + 1];
         //rollButton.sprite = gameControl.GameOver ? back: roll;
         if(gameControl.DiceRolling==1 && Time.time - lastFromRoll > 8)
@@ -61,8 +66,7 @@ public class DiceRolling : MonoBehaviour
         if (gameControl.DiceRolling==2 && Time.time-lastTime>1.2)
         {
             gameControl.DiceRolling=3;
-            dice1Renderer.enabled = false;
-            dice2Renderer.enabled=false;
+
         }
         if (GameControl.multiplayer && gameControl.DiceRolling < 3 && GameControl.ThisMultiplayer != null)
         {

@@ -29,10 +29,11 @@ public class Multiplayer : NetworkBehaviour
     {
         lobbyAssigned.Value = false;
         gameControlAssigned.Value = false;
-        DontDestroyOnLoad(this);
-        
         playerChoicesDictionary = new Dictionary<ulong, int>();
+        DontDestroyOnLoad(this);
     }
+
+   
 
     // Update is called once per frame
     void Update()
@@ -89,7 +90,7 @@ public class Multiplayer : NetworkBehaviour
                 k++;
             }
         }
-        int[] otherAttributes = new int[7];
+        int[] otherAttributes = new int[8];
         otherAttributes[0] = gameControl.CurrentTurn;
         otherAttributes[1] = gameControl.DiceRolling;
         otherAttributes[2] = gameControl.OccupyAmount;
@@ -97,7 +98,8 @@ public class Multiplayer : NetworkBehaviour
         otherAttributes[4] = gameControl.StealingAndDonating;
         otherAttributes[5] = gameControl.StepCount;
         otherAttributes[6] = gameControl.SuperPowered;
-        SynchronizeGameClientRpc(powerUpPositions, powerUpKinds,occupied, playerPositions, GameControl.DeadPlayerList, otherAttributes, endTurnCall);
+        otherAttributes[7] = GameControl.SideLength;
+        SynchronizeGameClientRpc(powerUpPositions, powerUpKinds, occupied, playerPositions, GameControl.DeadPlayerList, otherAttributes, endTurnCall);
     }
 
     [ClientRpc]
@@ -105,6 +107,16 @@ public class Multiplayer : NetworkBehaviour
     {
         if(IsHost || gameControl==null)
         {
+            return;
+        }
+        if (GameControl.SideLength != otherAttributes[7])
+        {
+            GameControl.SideLength = otherAttributes[7];
+            GameControl.MainGameControl = null;
+            GameControl.ThisMultiplayer = null;
+            gameControlAssigned.Value = false;
+            gameControl = null;
+            SceneManager.LoadScene("Game");
             return;
         }
         if (endTurnCall)
@@ -216,13 +228,13 @@ public class Multiplayer : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     public void PlayerChoosingServerRpc(int playerNo, ulong playerId)
     {
+        if (playerChoicesDictionary.ContainsValue(playerNo))
+        {
+            SynchronizeLobbyServerRpc();
+            return;
+        }
         if (playerChoicesDictionary.ContainsKey(playerId))
         {
-            if(playerChoicesDictionary.ContainsValue(playerNo))
-            {
-                SynchronizeLobbyServerRpc();
-                return;
-            }
             playerChoicesDictionary.TryGetValue(playerId, out int value);
             lobbyManager.playerChoices[value] = false;
             playerChoicesDictionary.Remove(playerId);
@@ -251,7 +263,6 @@ public class Multiplayer : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     public void PlayerLeftServerRpc(ulong playerId)
     {
-        print("wnenk");
         if(SceneManager.GetActiveScene().name=="Lobby")
         {
             if (playerChoicesDictionary.ContainsKey(playerId))
