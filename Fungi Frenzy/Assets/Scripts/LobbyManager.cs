@@ -1,15 +1,10 @@
-using System.Collections;
-using System.Collections.Generic;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using Unity.Networking.Transport.Relay;
 using Unity.Services.Authentication;
 using Unity.Services.Core;
-using Unity.Services.Lobbies;
-using Unity.Services.Lobbies.Models;
 using Unity.Services.Relay;
 using Unity.Services.Relay.Models;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -47,6 +42,10 @@ public class LobbyManager : MonoBehaviour
                 multiplayerInstance.StartGameServerRpc(playerChoices);
             }
         });
+        NetworkManager.Singleton.OnClientDisconnectCallback += (ulong client) =>
+        {
+            LoadStartMenuClientRpc();
+        };
     }
 
 
@@ -92,6 +91,7 @@ public class LobbyManager : MonoBehaviour
             RelayServerData data = new(allocation, "dtls");
             NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(data);
             NetworkManager.Singleton.StartClient();
+            codeShow.text=inputField.text;
         }
         catch(RelayServiceException e)
         {
@@ -102,6 +102,12 @@ public class LobbyManager : MonoBehaviour
     public void Click(int playerNo)
     {
         multiplayerInstance.PlayerChoosingServerRpc( playerNo,multiplayerInstance.OwnerClientId);
+    }
+
+    [ClientRpc]
+    public void LoadStartMenuClientRpc()
+    {
+        Application.Quit();
     }
 }
 
