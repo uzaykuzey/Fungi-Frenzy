@@ -101,6 +101,10 @@ public class LobbyManager : MonoBehaviour
 
     public void Click(int playerNo)
     {
+        if(multiplayerInstance==null)
+        {
+            return;
+        }
         multiplayerInstance.PlayerChoosingServerRpc( playerNo,multiplayerInstance.OwnerClientId);
     }
 
