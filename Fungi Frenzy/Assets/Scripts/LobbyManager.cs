@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using Unity.Networking.Transport.Relay;
@@ -32,7 +33,11 @@ public class LobbyManager : MonoBehaviour
         }
         DontDestroyOnLoad(this);
         await UnityServices.InitializeAsync();
-        await AuthenticationService.Instance.SignInAnonymouslyAsync();
+        try
+        {
+            await AuthenticationService.Instance.SignInAnonymouslyAsync();
+        }
+        catch { }
         buttons[0].onClick.AddListener(CreateRelay);
         buttons[1].onClick.AddListener(JoinRelay);
         buttons[2].onClick.AddListener(() =>
@@ -111,7 +116,21 @@ public class LobbyManager : MonoBehaviour
     [ClientRpc]
     public void LoadStartMenuClientRpc()
     {
-        Application.Quit();
+        Multiplayer.ResetValues();
+        GameControl.ThisMultiplayer = null;
+        GameControl.MainGameControl = null;
+        GameObject[] allObjects = FindObjectsOfType<GameObject>();
+
+        foreach (GameObject obj in allObjects)
+        {
+            if(obj==this)
+            {
+                continue;
+            }
+            Destroy(obj);
+        }
+        Destroy(gameObject);
+        SceneManager.LoadScene("Start Menu");
     }
 }
 

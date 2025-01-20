@@ -33,7 +33,15 @@ public class Multiplayer : NetworkBehaviour
         DontDestroyOnLoad(this);
     }
 
-
+    public static void ResetValues()
+    {
+        gameControl = null;
+        lobbyManager = null;
+        dice1Position = new NetworkVariable<Vector3>(new Vector3(0, 0, 0));
+        dice2Position = new NetworkVariable<Vector3>(new Vector3(0, 0, 0));
+        dice1Rotation = new NetworkVariable<Quaternion>(new Quaternion(0, 0, 0, 0));
+        dice2Rotation = new NetworkVariable<Quaternion>(new Quaternion(0, 0, 0, 0));
+}
 
     
 
@@ -208,6 +216,18 @@ public class Multiplayer : NetworkBehaviour
     [ClientRpc]
     public void StartGameClientRpc(bool[] playerChoices)
     {
+        int noOfPlayers = 0;
+        for(int i=0; i<playerChoices.Length;i++)
+        {
+            if (playerChoices[i])
+            {
+                noOfPlayers++;
+            }
+        }
+        if(noOfPlayers<2)
+        {
+            return;
+        }
         for(int i=0;i<playerChoices.Length;i++)
         {
             GameControl.DeadPlayerList[i]= !(playerChoices[i]);
@@ -276,5 +296,6 @@ public class Multiplayer : NetworkBehaviour
             SynchronizeLobbyServerRpc();
             return;
         }
+        lobbyManager.LoadStartMenuClientRpc();
     }
 }

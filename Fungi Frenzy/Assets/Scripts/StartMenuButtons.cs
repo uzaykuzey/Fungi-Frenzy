@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
@@ -71,6 +72,16 @@ public class StartMenuButtons : MonoBehaviour
         {
             GameControl.multiplayer = true;
             SceneManager.LoadScene("Lobby");
+        });
+
+        buttons[8].onClick.AddListener(() =>
+        {
+            Application.Quit();
+        });
+
+        buttons[9].onClick.AddListener(() =>
+        {
+            Application.OpenURL("https://uzay-kuzey.itch.io/");
         });
     }
 
