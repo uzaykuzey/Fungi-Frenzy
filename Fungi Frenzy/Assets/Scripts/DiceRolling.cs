@@ -63,41 +63,16 @@ public class DiceRolling : MonoBehaviour
             gameControl.DiceRolling = 2;
             gameControl.DiceToStepCount(dice1.GetValue() + dice2.GetValue());
         }
-        if (gameControl.DiceRolling==2 && Time.time-lastTime>1.2)
+        if (gameControl.DiceRolling==2 && Time.time-lastTime>0.8f)
         {
             gameControl.DiceRolling=3;
 
-        }
-        if (GameControl.multiplayer && gameControl.DiceRolling < 3 && GameControl.ThisMultiplayer != null)
-        {
-            if (GameControl.ThisMultiplayer.IsHost)
-            {
-                Multiplayer.dice1Position.Value = dice1.transform.position;
-                Multiplayer.dice1Rotation.Value = dice1.transform.rotation;
-                Multiplayer.dice2Position.Value = dice2.transform.position;
-                Multiplayer.dice2Rotation.Value = dice2.transform.rotation;
-            }
-            else
-            {
-                dice1.transform.position = Multiplayer.dice1Position.Value;
-                dice1.transform.rotation = Multiplayer.dice1Rotation.Value;
-
-                dice2.transform.position = Multiplayer.dice2Position.Value;
-                dice2.transform.rotation = Multiplayer.dice2Rotation.Value;
-            }
         }
     }
 
     private void OnMouseDown()
     {
-        if(GameControl.multiplayer) 
-        {
-            GameControl.ThisMultiplayer.RollClickedServerRpc(GameControl.ThisMultiplayer.OwnerClientId);
-        }
-        else
-        {
-            Clicked();
-        }
+        Clicked();
     }
 
     public void Clicked()

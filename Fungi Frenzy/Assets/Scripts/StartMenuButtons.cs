@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -13,13 +12,11 @@ public class StartMenuButtons : MonoBehaviour
     void Start()
     {
         GameControl.MainGameControl = null;
-        GameControl.ThisMultiplayer = null;
         FourPlayers();
         TwentyxTwenty();
 
         buttons[0].onClick.AddListener(() => 
         {
-            GameControl.multiplayer = false;
             SceneManager.LoadScene("Game");
         });
 
@@ -70,16 +67,10 @@ public class StartMenuButtons : MonoBehaviour
 
         buttons[7].onClick.AddListener(() =>
         {
-            GameControl.multiplayer = true;
-            SceneManager.LoadScene("Lobby");
-        });
-
-        buttons[8].onClick.AddListener(() =>
-        {
             Application.Quit();
         });
 
-        buttons[9].onClick.AddListener(() =>
+        buttons[8].onClick.AddListener(() =>
         {
             Application.OpenURL("https://uzay-kuzey.itch.io/");
         });

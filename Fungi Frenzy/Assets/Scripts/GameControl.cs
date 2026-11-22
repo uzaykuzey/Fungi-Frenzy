@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,7 +6,6 @@ public class GameControl : MonoBehaviour
 {
     // Start is called before the first frame update
     public static GameControl MainGameControl { get; set; }
-    public static Multiplayer ThisMultiplayer { get; set; }
     public int OccupyAmount { get; set; }
     public bool GameOver { get; set; }
     public int CurrentTurn { get; set; }
@@ -39,7 +37,6 @@ public class GameControl : MonoBehaviour
 
     public static bool[] DeadPlayerList;
     public static int SideLength;
-    public static bool multiplayer;
 
     
 
@@ -186,10 +183,6 @@ public class GameControl : MonoBehaviour
 
     void ReplenishPowerUps()
     {
-        if(multiplayer && (ThisMultiplayer==null || !ThisMultiplayer.IsHost))
-        {
-            return;
-        }
         int chanceFactor = board.Length;
         float sigmoidReciprocal = 1 + Mathf.Exp(-biggestTurnCounter);
         int probabilitySuper = SupersCanSpawn() ? ((int)(4.4 / (1 + Mathf.Exp(-biggestTurnCounter * 0.7054651f)) - 2.2) + SuperBoost()): 0;
@@ -275,7 +268,7 @@ public class GameControl : MonoBehaviour
             MainGameControl = this;
             return;
         }
-        if (GameOver || (multiplayer && !ThisMultiplayer.IsHost))
+        if (GameOver)
         {
             return;
         }
@@ -296,14 +289,7 @@ public class GameControl : MonoBehaviour
                 toFill = eatenPowerUps / 4;
                 if (winner != -1)
                 {
-                    if(multiplayer)
-                    {
-                        ThisMultiplayer.WinnerDisplayServerRpc(winner);
-                    }
-                    else
-                    {
-                        WinnerDisplayFunction(winner);
-                    }
+                    WinnerDisplayFunction(winner);
                 }
             }
             if (DeadPlayerList[CurrentTurn % 4])
@@ -322,10 +308,6 @@ public class GameControl : MonoBehaviour
                 OccupyAmount = 0;
                 DiceRolling = 3;
             }*/
-            if (multiplayer)
-            {
-                ThisMultiplayer.RequestSynchServerRpc(true);
-            }
             DiceRolling = 0;
             leaderboard.ColorUpdate();
             return;
@@ -628,10 +610,6 @@ public class GameControl : MonoBehaviour
         if(!GameOver && DiceRolling==3)
         {
             remainingStepCounter.text = (StepCount<=0 ? 0: StepCount) + "";
-        }
-        if(multiplayer)
-        {
-
         }
     }
 

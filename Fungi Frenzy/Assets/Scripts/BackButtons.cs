@@ -20,11 +20,6 @@ public class BackButtons : MonoBehaviour
 
     private void OnMouseDown()
     {
-        if(GameControl.multiplayer)
-        {
-            LobbyManager.multiplayerInstance.PlayerLeftServerRpc(GameControl.ThisMultiplayer.OwnerClientId);
-            return;
-        }
         SceneManager.LoadScene("Start Menu");
     }
 }

@@ -48,10 +48,6 @@ public class Player : MonoBehaviour
         if(secretProgress==code.Length)
         {
             ActivateSecret();
-            if(GameControl.multiplayer)
-            {
-                GameControl.ThisMultiplayer.SecretServerRpc();
-            }
         }
     }
 
@@ -63,6 +59,8 @@ public class Player : MonoBehaviour
 
     private void FixedUpdate()
     {
-       GetComponent<SpriteRenderer>().sprite = useSprites[playerNo];
+        SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
+        spriteRenderer.sprite = useSprites[playerNo];
+        spriteRenderer.color = spriteRenderer.sprite == secret ? Color.white : TileObject.PlayerTint(playerNo);
     }
 }

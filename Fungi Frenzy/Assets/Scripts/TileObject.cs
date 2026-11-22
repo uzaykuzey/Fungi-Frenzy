@@ -8,6 +8,8 @@ public class TileObject : MonoBehaviour
     public int powerUp; //0: no powerup, 1: food, 2: tile getter, 3: step donater, 4: step stealer
     [SerializeField] private SpriteRenderer food;
     public static readonly Color[] PlayerColors = new Color[] {Color.white, new Color(0.7133158f, 0.211819f, 0.990566f, 1), Color.red, Color.yellow, Color.cyan};
+    private const float PlayerTintStrength = 0.4f;
+    public static Color PlayerTint(int playerNo) => Color.Lerp(Color.white, PlayerColors[playerNo + 1], PlayerTintStrength);
     public static readonly Color[] PowerUpColors = new Color[] { new Color(0,0,0,0), new Color(0.6226415f, 0.2161726f, 0.01566389f, 1), new Color(0.3f, 0.3f, 1, 1), Color.green, new Color(1, 0.5817609f, 0.9577771f, 1) , Color.white, Color.black};
     public int boardPosition;
     public int signal;
@@ -152,14 +154,7 @@ public class TileObject : MonoBehaviour
 
     private void OnMouseDown()
     {
-        if(GameControl.multiplayer)
-        {
-            GameControl.ThisMultiplayer.TileClickedServerRpc(boardPosition, GameControl.ThisMultiplayer.OwnerClientId);
-        }
-        else
-        {
-            Click();
-        }
+        Click();
     }
 
     public void Click()
